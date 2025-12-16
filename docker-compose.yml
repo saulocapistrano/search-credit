@@ -1,0 +1,47 @@
+version: '3.9'
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: search-credit-postgres
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_DB: search_credit_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - search-credit-network
+
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: search-credit-kafka
+    ports:
+      - "9094:9092"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9094
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    networks:
+      - search-credit-network
+
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: search-credit-zookeeper
+    ports:
+      - "2182:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - search-credit-network
+
+volumes:
+  pgdata:
+
+networks:
+  search-credit-network:
