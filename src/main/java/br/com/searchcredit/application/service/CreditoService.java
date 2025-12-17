@@ -2,7 +2,7 @@ package br.com.searchcredit.application.service;
 
 import br.com.searchcredit.application.dto.CreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
-import br.com.searchcredit.infrastructure.repository.CreditoRepository;
+import br.com.searchcredit.domain.repository.CreditoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
