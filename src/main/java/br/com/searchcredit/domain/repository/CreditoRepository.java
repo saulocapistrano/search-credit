@@ -1,4 +1,4 @@
-﻿package br.com.searchcredit.domain.repository;
+package br.com.searchcredit.domain.repository;
 
 import br.com.searchcredit.domain.entity.Credito;
 
