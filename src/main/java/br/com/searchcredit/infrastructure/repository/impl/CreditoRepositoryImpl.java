@@ -27,5 +27,4 @@ public class CreditoRepositoryImpl implements CreditoRepository {
         return jpaRepository.findAllByNumeroNfse(numeroNfse);
     }
 
-
 }
