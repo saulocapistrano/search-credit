@@ -1,10 +1,12 @@
 package br.com.searchcredit.infrastructure.kafka.event;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class ConsultaCreditoEvent {
 
     private String tipoConsulta;
