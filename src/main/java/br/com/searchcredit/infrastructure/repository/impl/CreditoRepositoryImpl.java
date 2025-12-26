@@ -1,7 +1,7 @@
 package br.com.searchcredit.infrastructure.repository.impl;
 
 import br.com.searchcredit.domain.entity.Credito;
-import br.com.searchcredit.infrastructure.repository.CreditoRepositoryCustom;
+import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.CreditoJpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class CreditoRepositoryImpl implements CreditoRepositoryCustom {
+public class CreditoRepositoryImpl implements CreditoRepository {
 
     private final CreditoJpaRepository jpaRepository;
 
