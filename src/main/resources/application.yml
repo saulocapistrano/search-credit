@@ -37,3 +37,10 @@ spring:
 
 server:
   port: 8189
+
+minio:
+  endpoint: http://search-credit-minio:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: comprovantes
+  url: http://localhost:9000
