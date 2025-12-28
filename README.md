@@ -2,7 +2,13 @@
 
 API REST desenvolvida em Spring Boot para consulta de créditos constituídos. Desenvolvida como desafio técnico seguindo princípios de Clean Architecture e Domain-Driven Design (DDD).
 
-## Execução Rápida
+
+## Links dos Repositórios
+
+- **Backend (Este projeto):** https://github.com/saulocapistrano/search-credit
+- **Frontend:** https://github.com/saulocapistrano/search-credit-frontend
+- **Worker:** https://github.com/saulocapistrano/credito-analise-worker
+
 
 ### Pré-requisitos Obrigatórios
 
@@ -30,8 +36,8 @@ docker network create search-credit-network
 # 3. Compilar o projeto
 ./mvnw clean package
 
-# 4. Subir infraestrutura (PostgreSQL, Zookeeper, Kafka)
-docker compose up -d postgres zookeeper kafka
+# 4. Subir infraestrutura (PostgreSQL, Zookeeper, Kafka, Kafka UI)
+docker compose up -d postgres zookeeper kafka kafka-ui
 
 # 5. Aguardar Kafka inicializar (10-30 segundos)
 docker compose logs kafka | grep "started (kafka.server.KafkaServer)"
@@ -49,6 +55,51 @@ docker compose logs -f search-credit
 
 - **Swagger UI:** http://localhost:8189/swagger-ui.html
 - **API Base:** http://localhost:8189
+- **Kafka UI:** http://localhost:8090
+
+
+## Execução do Ecossistema Completo
+
+Para testar o sistema completo (Backend + Frontend), execute os projetos abaixo na ordem indicada.
+
+
+### Frontend Angular
+
+```bash
+git clone https://github.com/saulocapistrano/search-credit-frontend.git
+cd search-credit-frontend
+docker compose up -d --build
+```
+
+**Repositório:** https://github.com/saulocapistrano/search-credit-frontend
+
+**Responsabilidades:**
+- Interface web para consulta de créditos
+- Consulta por NFS-e ou número do crédito
+- Tabela responsiva de resultados
+- Porta: `4200`
+
+**Acessar:** http://localhost:4200
+
+## Serviço de Análise (Opcional)
+
+O worker Kafka é um serviço adicional.
+
+### Worker Kafka (Opcional)
+
+```bash
+git clone https://github.com/saulocapistrano/credito-analise-worker.git
+cd credito-analise-worker
+./mvnw clean package
+docker compose up -d worker
+```
+
+**Repositório:** https://github.com/saulocapistrano/credito-analise-worker
+
+**Responsabilidades:**
+- Consome eventos Kafka do tópico `consulta-creditos-topic`
+- Processa eventos de consulta de forma assíncrona
+- Porta: `8081`
 
 ### Testar os Endpoints
 
@@ -122,53 +173,6 @@ GET http://localhost:8189/api/creditos/credito/123456
 - `200 OK` - Crédito encontrado
 - `404 Not Found` - Crédito não encontrado
 
-## Execução do Ecossistema Completo
-
-Para testar o sistema completo (Backend + Frontend), execute os projetos abaixo na ordem indicada.
-
-### 1. Backend (Este Projeto)
-
-Siga os passos da seção "Execução Rápida" acima.
-
-### 2. Frontend Angular
-
-```bash
-git clone https://github.com/saulocapistrano/search-credit-frontend.git
-cd search-credit-frontend
-docker compose up -d --build
-```
-
-**Repositório:** https://github.com/saulocapistrano/search-credit-frontend
-
-**Responsabilidades:**
-- Interface web para consulta de créditos
-- Consulta por NFS-e ou número do crédito
-- Tabela responsiva de resultados
-- Porta: `4200`
-
-**Acessar:** http://localhost:4200
-
-## Serviço de Análise (Opcional)
-
-O worker Kafka é um serviço adicional que demonstra arquitetura de microsserviços e processamento assíncrono. **Não é necessário** para avaliação do desafio técnico.
-
-### Worker Kafka (Opcional)
-
-```bash
-git clone https://github.com/saulocapistrano/credito-analise-worker.git
-cd credito-analise-worker
-./mvnw clean package
-docker compose up -d worker
-```
-
-**Repositório:** https://github.com/saulocapistrano/credito-analise-worker
-
-**Responsabilidades:**
-- Consome eventos Kafka do tópico `consulta-creditos-topic`
-- Processa eventos de consulta de forma assíncrona
-- Porta: `8081`
-
-**Observação:** Este serviço é **opcional** e demonstra conhecimento em arquitetura de microsserviços e comunicação assíncrona.
 
 ## Testes Automatizados
 
@@ -215,6 +219,30 @@ A API publica eventos Kafka no tópico `consulta-creditos-topic` sempre que uma 
 - **Serialização**: JSON via `JsonSerializer`
 - **Tópico**: `consulta-creditos-topic`
 
+### Kafka UI - Visualização de Tópicos e Mensagens
+
+O projeto inclui **Kafka UI** para visualização e monitoramento dos tópicos Kafka em tempo real.
+
+**Acessar:** http://localhost:8090
+
+**Funcionalidades:**
+- Visualizar tópicos Kafka e suas mensagens
+- Inspecionar consumer groups e offsets
+- Monitorar brokers e partições
+- Produzir mensagens de teste
+- Visualizar eventos publicados pela API em tempo real
+
+**Como usar:**
+1. Após subir os serviços, acesse http://localhost:8090
+2. Navegue até o tópico `consulta-creditos-topic`
+3. Realize consultas na API (via Swagger ou curl)
+4. Visualize os eventos sendo publicados no Kafka em tempo real
+
+**Verificar logs do Kafka UI:**
+```bash
+docker compose logs -f kafka-ui
+```
+
 ### Padrões de Projeto
 
 - **MVC** - Separação Controller/Service/Repository
@@ -237,6 +265,7 @@ docker compose ps
 docker compose logs -f search-credit
 docker compose logs -f kafka
 docker compose logs -f postgres
+docker compose logs -f kafka-ui
 ```
 
 ### Parar Todos os Serviços
@@ -321,9 +350,4 @@ search-credit/
 └── pom.xml
 ```
 
-## Links dos Repositórios
-
-- **Backend (Este projeto):** https://github.com/saulocapistrano/search-credit
-- **Frontend:** https://github.com/saulocapistrano/search-credit-frontend
-- **Worker:** https://github.com/saulocapistrano/credito-analise-worker
 
