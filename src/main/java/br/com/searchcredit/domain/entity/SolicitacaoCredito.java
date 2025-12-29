@@ -63,5 +63,11 @@ public class SolicitacaoCredito {
 
     @Column(name = "data_solicitacao", nullable = false)
     private LocalDateTime dataSolicitacao;
+
+    @Column(name = "comentario_analise", columnDefinition = "TEXT")
+    private String comentarioAnalise;
+
+    @Column(name = "data_analise")
+    private LocalDateTime dataAnalise;
 }
 
