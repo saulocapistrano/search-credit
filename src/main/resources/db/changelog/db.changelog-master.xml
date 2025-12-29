@@ -8,5 +8,6 @@
     <include file="db/changelog/001-create-table-credito.xml"/>
     <include file="db/changelog/002-insert-creditos.xml"/>
     <include file="db/changelog/003-create-table-solicitacao-credito.xml"/>
+    <include file="db/changelog/004-add-analise-fields-solicitacao-credito.xml"/>
 
 </databaseChangeLog>
