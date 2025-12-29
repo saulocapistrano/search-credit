@@ -27,5 +27,7 @@ public class SolicitacaoCreditoResponseDto {
     private String nomeSolicitante;
     private String comprovanteUrl;
     private LocalDateTime dataSolicitacao;
+    private String comentarioAnalise;
+    private LocalDateTime dataAnalise;
 }
 
