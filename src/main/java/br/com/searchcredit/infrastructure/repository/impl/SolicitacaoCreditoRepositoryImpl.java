@@ -1,6 +1,7 @@
 package br.com.searchcredit.infrastructure.repository.impl;
 
 import br.com.searchcredit.domain.entity.SolicitacaoCredito;
+import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.SolicitacaoCreditoJpaRepository;
 import org.springframework.stereotype.Repository;
@@ -40,6 +41,16 @@ public class SolicitacaoCreditoRepositoryImpl implements SolicitacaoCreditoRepos
     @Override
     public List<SolicitacaoCredito> findByNumeroCredito(String numeroCredito) {
         return jpaRepository.findByNumeroCredito(numeroCredito);
+    }
+
+    @Override
+    public List<SolicitacaoCredito> findByNumeroNfse(String numeroNfse) {
+        return jpaRepository.findByNumeroNfse(numeroNfse);
+    }
+
+    @Override
+    public List<SolicitacaoCredito> findByStatusOrderByDataSolicitacaoAsc(StatusSolicitacao status) {
+        return jpaRepository.findByStatusOrderByDataSolicitacaoAsc(status);
     }
 }
 
