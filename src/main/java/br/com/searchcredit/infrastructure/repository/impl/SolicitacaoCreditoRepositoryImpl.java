@@ -4,6 +4,10 @@ import br.com.searchcredit.domain.entity.SolicitacaoCredito;
 import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.SolicitacaoCreditoJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -51,6 +55,31 @@ public class SolicitacaoCreditoRepositoryImpl implements SolicitacaoCreditoRepos
     @Override
     public List<SolicitacaoCredito> findByStatusOrderByDataSolicitacaoAsc(StatusSolicitacao status) {
         return jpaRepository.findByStatusOrderByDataSolicitacaoAsc(status);
+    }
+
+    @Override
+    public Page<SolicitacaoCredito> findByNomeSolicitante(String nomeSolicitante, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return jpaRepository.findByNomeSolicitante(nomeSolicitante, pageable);
+    }
+
+    @Override
+    public Page<SolicitacaoCredito> findAll(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return jpaRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<SolicitacaoCredito> findAllOrderByNumeroCreditoDesc() {
+        return jpaRepository.findAllOrderByNumeroCreditoDesc();
+    }
+
+    @Override
+    public List<SolicitacaoCredito> findAllOrderByNumeroNfseDesc() {
+        return jpaRepository.findAllOrderByNumeroNfseDesc();
     }
 }
 
