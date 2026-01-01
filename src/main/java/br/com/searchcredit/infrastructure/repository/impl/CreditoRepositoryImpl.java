@@ -3,6 +3,8 @@ package br.com.searchcredit.infrastructure.repository.impl;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.CreditoJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,6 +27,11 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     @Override
     public List<Credito> findAllByNumeroNfse(String numeroNfse) {
         return jpaRepository.findAllByNumeroNfse(numeroNfse);
+    }
+
+    @Override
+    public Page<Credito> findAll(Pageable pageable) {
+        return jpaRepository.findAll(pageable);
     }
 
 }
