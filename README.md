@@ -9,6 +9,34 @@ API REST desenvolvida em Spring Boot para consulta de créditos constituídos. D
 - **Frontend:** https://github.com/saulocapistrano/search-credit-frontend
 - **Worker:** https://github.com/saulocapistrano/credito-analise-worker
 
+## Passo 00 – Subir a infraestrutura base (API)
+
+Este projeto faz parte de um ecossistema distribuído. Este repositório é responsável **apenas pela API e pela infraestrutura base dela**.
+
+O script de bootstrap cria a rede Docker compartilhada (`search-credit-network`) necessária para o ecossistema e sobe todos os containers da API.
+
+**Importante:**
+- O script cria a rede global necessária ao ecossistema
+- Frontend e worker devem ser iniciados manualmente em seus próprios projetos
+- Este script é idempotente (pode ser executado várias vezes sem problemas)
+
+### Executar o Bootstrap
+
+**Linux/macOS:**
+```bash
+chmod +x bootstrap.sh
+./bootstrap.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\bootstrap.ps1
+```
+
+O script irá:
+1. Verificar se a rede Docker `search-credit-network` existe
+2. Criar a rede caso ela não exista
+3. Subir todos os containers da API (PostgreSQL, Kafka, Zookeeper, Kafka UI, MinIO, PgAdmin e a API)
 
 ### Pré-requisitos Obrigatórios
 
@@ -173,6 +201,18 @@ GET http://localhost:8189/api/creditos/credito/123456
 - `200 OK` - Crédito encontrado
 - `404 Not Found` - Crédito não encontrado
 
+## Dados de demonstração e fluxo de aprovação
+
+- **Seed de `credito`**: A tabela `credito` possui dados DEMO inseridos via Liquibase (changeSet `002-insert-creditos.xml`) apenas para facilitar testes de consulta dos endpoints. Esses dados não representam créditos aprovados do fluxo real.
+
+- **Fluxo de aprovação**: Créditos "reais" do sistema são criados somente quando uma `solicitacao_credito` é **APROVADA** e o worker processa o evento Kafka correspondente. O fluxo completo é:
+  1. Solicitação criada com status `EM_ANALISE`
+  2. Análise da solicitação
+  3. Solicitação aprovada (status `APROVADO`)
+  4. Evento Kafka publicado
+  5. Worker consome o evento e cria o registro na tabela `credito`
+
+- **Observação importante**: O seed de `credito` via Liquibase é massa de dados para consulta e testes, não representa créditos que passaram pelo processo de aprovação.
 
 ## Testes Automatizados
 
