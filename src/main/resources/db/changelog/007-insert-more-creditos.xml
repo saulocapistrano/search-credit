@@ -1,0 +1,272 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="007" author="saulocapistrano">
+       
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100001"/>
+            <column name="numero_nfse" value="2000001"/>
+            <column name="data_constituicao" valueDate="2024-03-10"/>
+            <column name="valor_issqn" valueNumeric="2250.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="5.5"/>
+            <column name="valor_faturado" valueNumeric="45000.00"/>
+            <column name="valor_deducao" valueNumeric="7500.00"/>
+            <column name="base_calculo" valueNumeric="37500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100002"/>
+            <column name="numero_nfse" value="2000001"/>
+            <column name="data_constituicao" valueDate="2024-03-11"/>
+            <column name="valor_issqn" valueNumeric="1800.25"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="4.8"/>
+            <column name="valor_faturado" valueNumeric="35000.00"/>
+            <column name="valor_deducao" valueNumeric="6000.00"/>
+            <column name="base_calculo" valueNumeric="29000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100003"/>
+            <column name="numero_nfse" value="2000002"/>
+            <column name="data_constituicao" valueDate="2024-03-15"/>
+            <column name="valor_issqn" valueNumeric="3200.50"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="6.0"/>
+            <column name="valor_faturado" valueNumeric="55000.00"/>
+            <column name="valor_deducao" valueNumeric="9000.00"/>
+            <column name="base_calculo" valueNumeric="46000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100004"/>
+            <column name="numero_nfse" value="2000002"/>
+            <column name="data_constituicao" valueDate="2024-03-16"/>
+            <column name="valor_issqn" valueNumeric="2750.75"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="5.5"/>
+            <column name="valor_faturado" valueNumeric="50000.00"/>
+            <column name="valor_deducao" valueNumeric="8000.00"/>
+            <column name="base_calculo" valueNumeric="42000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100005"/>
+            <column name="numero_nfse" value="2000002"/>
+            <column name="data_constituicao" valueDate="2024-03-17"/>
+            <column name="valor_issqn" valueNumeric="1950.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="4.5"/>
+            <column name="valor_faturado" valueNumeric="40000.00"/>
+            <column name="valor_deducao" valueNumeric="6500.00"/>
+            <column name="base_calculo" valueNumeric="33500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100006"/>
+            <column name="numero_nfse" value="2000003"/>
+            <column name="data_constituicao" valueDate="2024-04-05"/>
+            <column name="valor_issqn" valueNumeric="1425.50"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="4.2"/>
+            <column name="valor_faturado" valueNumeric="32000.00"/>
+            <column name="valor_deducao" valueNumeric="5000.00"/>
+            <column name="base_calculo" valueNumeric="27000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100007"/>
+            <column name="numero_nfse" value="2000004"/>
+            <column name="data_constituicao" valueDate="2024-04-12"/>
+            <column name="valor_issqn" valueNumeric="3800.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="6.5"/>
+            <column name="valor_faturado" valueNumeric="60000.00"/>
+            <column name="valor_deducao" valueNumeric="10000.00"/>
+            <column name="base_calculo" valueNumeric="50000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100008"/>
+            <column name="numero_nfse" value="2000004"/>
+            <column name="data_constituicao" valueDate="2024-04-13"/>
+            <column name="valor_issqn" valueNumeric="2600.25"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="5.2"/>
+            <column name="valor_faturado" valueNumeric="48000.00"/>
+            <column name="valor_deducao" valueNumeric="7500.00"/>
+            <column name="base_calculo" valueNumeric="40500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100009"/>
+            <column name="numero_nfse" value="2000005"/>
+            <column name="data_constituicao" valueDate="2024-05-01"/>
+            <column name="valor_issqn" valueNumeric="1100.75"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="3.8"/>
+            <column name="valor_faturado" valueNumeric="28000.00"/>
+            <column name="valor_deducao" valueNumeric="4500.00"/>
+            <column name="base_calculo" valueNumeric="23500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100010"/>
+            <column name="numero_nfse" value="2000005"/>
+            <column name="data_constituicao" valueDate="2024-05-02"/>
+            <column name="valor_issqn" valueNumeric="950.50"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="3.5"/>
+            <column name="valor_faturado" valueNumeric="25000.00"/>
+            <column name="valor_deducao" valueNumeric="4000.00"/>
+            <column name="base_calculo" valueNumeric="21000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100011"/>
+            <column name="numero_nfse" value="2000006"/>
+            <column name="data_constituicao" valueDate="2024-05-20"/>
+            <column name="valor_issqn" valueNumeric="4200.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="7.0"/>
+            <column name="valor_faturado" valueNumeric="65000.00"/>
+            <column name="valor_deducao" valueNumeric="11000.00"/>
+            <column name="base_calculo" valueNumeric="54000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100012"/>
+            <column name="numero_nfse" value="2000006"/>
+            <column name="data_constituicao" valueDate="2024-05-21"/>
+            <column name="valor_issqn" valueNumeric="3400.50"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="6.0"/>
+            <column name="valor_faturado" valueNumeric="56000.00"/>
+            <column name="valor_deducao" valueNumeric="9500.00"/>
+            <column name="base_calculo" valueNumeric="46500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100013"/>
+            <column name="numero_nfse" value="2000006"/>
+            <column name="data_constituicao" valueDate="2024-05-22"/>
+            <column name="valor_issqn" valueNumeric="2100.25"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="4.5"/>
+            <column name="valor_faturado" valueNumeric="42000.00"/>
+            <column name="valor_deducao" valueNumeric="7000.00"/>
+            <column name="base_calculo" valueNumeric="35000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100014"/>
+            <column name="numero_nfse" value="2000007"/>
+            <column name="data_constituicao" valueDate="2024-06-10"/>
+            <column name="valor_issqn" valueNumeric="1650.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="4.0"/>
+            <column name="valor_faturado" valueNumeric="38000.00"/>
+            <column name="valor_deducao" valueNumeric="6000.00"/>
+            <column name="base_calculo" valueNumeric="32000.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100015"/>
+            <column name="numero_nfse" value="2000008"/>
+            <column name="data_constituicao" valueDate="2024-06-15"/>
+            <column name="valor_issqn" valueNumeric="2900.75"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="5.8"/>
+            <column name="valor_faturado" valueNumeric="52000.00"/>
+            <column name="valor_deducao" valueNumeric="8500.00"/>
+            <column name="base_calculo" valueNumeric="43500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100016"/>
+            <column name="numero_nfse" value="2000008"/>
+            <column name="data_constituicao" valueDate="2024-06-16"/>
+            <column name="valor_issqn" valueNumeric="2300.50"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="5.0"/>
+            <column name="valor_faturado" valueNumeric="46000.00"/>
+            <column name="valor_deducao" valueNumeric="7500.00"/>
+            <column name="base_calculo" valueNumeric="38500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100017"/>
+            <column name="numero_nfse" value="2000009"/>
+            <column name="data_constituicao" valueDate="2024-07-05"/>
+            <column name="valor_issqn" valueNumeric="1350.25"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="3.9"/>
+            <column name="valor_faturado" valueNumeric="33000.00"/>
+            <column name="valor_deducao" valueNumeric="5500.00"/>
+            <column name="base_calculo" valueNumeric="27500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100018"/>
+            <column name="numero_nfse" value="2000009"/>
+            <column name="data_constituicao" valueDate="2024-07-06"/>
+            <column name="valor_issqn" valueNumeric="1025.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="true"/>
+            <column name="aliquota" valueNumeric="3.6"/>
+            <column name="valor_faturado" valueNumeric="27000.00"/>
+            <column name="valor_deducao" valueNumeric="4500.00"/>
+            <column name="base_calculo" valueNumeric="22500.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100019"/>
+            <column name="numero_nfse" value="2000010"/>
+            <column name="data_constituicao" valueDate="2024-07-20"/>
+            <column name="valor_issqn" valueNumeric="3600.00"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="6.2"/>
+            <column name="valor_faturado" valueNumeric="58000.00"/>
+            <column name="valor_deducao" valueNumeric="9800.00"/>
+            <column name="base_calculo" valueNumeric="48200.00"/>
+        </insert>
+
+        <insert tableName="credito">
+            <column name="numero_credito" value="100020"/>
+            <column name="numero_nfse" value="2000010"/>
+            <column name="data_constituicao" valueDate="2024-07-21"/>
+            <column name="valor_issqn" valueNumeric="2450.75"/>
+            <column name="tipo_credito" value="ISSQN"/>
+            <column name="simples_nacional" valueBoolean="false"/>
+            <column name="aliquota" valueNumeric="5.3"/>
+            <column name="valor_faturado" valueNumeric="47000.00"/>
+            <column name="valor_deducao" valueNumeric="7800.00"/>
+            <column name="base_calculo" valueNumeric="39200.00"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

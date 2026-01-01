@@ -9,5 +9,8 @@
     <include file="db/changelog/002-insert-creditos.xml"/>
     <include file="db/changelog/003-create-table-solicitacao-credito.xml"/>
     <include file="db/changelog/004-add-analise-fields-solicitacao-credito.xml"/>
+    <include file="db/changelog/005-add-constraints-indexes.xml"/>
+    <include file="db/changelog/006-relax-notnull-solicitacao-credit.xml"/>
+    <include file="db/changelog/007-insert-more-creditos.xml"/>
 
 </databaseChangeLog>

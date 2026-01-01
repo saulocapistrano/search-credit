@@ -1,0 +1,64 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="006" author="saulocapistrano">
+        <!-- Relaxar constraints NOT NULL em campos financeiros/detalhes -->
+        <!-- Permitir criação de solicitação com apenas: id, status, nome_solicitante, data_solicitacao -->
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="numero_credito"
+                columnDataType="VARCHAR(50)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="numero_nfse"
+                columnDataType="VARCHAR(50)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="data_constituicao"
+                columnDataType="DATE"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="valor_issqn"
+                columnDataType="DECIMAL(15,2)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="tipo_credito"
+                columnDataType="VARCHAR(50)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="simples_nacional"
+                columnDataType="BOOLEAN"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="aliquota"
+                columnDataType="DECIMAL(5,2)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="valor_faturado"
+                columnDataType="DECIMAL(15,2)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="valor_deducao"
+                columnDataType="DECIMAL(15,2)"/>
+
+        <dropNotNullConstraint
+                tableName="solicitacao_credito"
+                columnName="base_calculo"
+                columnDataType="DECIMAL(15,2)"/>
+
+    </changeSet>
+
+</databaseChangeLog>
+
