@@ -7,8 +7,10 @@ services:
     ports:
       - "8189:8189"
     depends_on:
-      - postgres
-      - kafka
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     networks:
       - search-credit-network
 
@@ -23,6 +25,24 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d search_credit_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - search-credit-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: search-credit-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@searchcredit.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    depends_on:
+      - postgres
     networks:
       - search-credit-network
 
@@ -87,4 +107,5 @@ volumes:
 
 networks:
   search-credit-network:
+    name: search-credit-network
     external: true
