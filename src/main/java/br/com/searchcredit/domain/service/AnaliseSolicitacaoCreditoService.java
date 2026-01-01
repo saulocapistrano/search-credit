@@ -1,13 +1,13 @@
 package br.com.searchcredit.domain.service;
 
-import br.com.searchcredit.domain.entity.SolicitacaoCredito;
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
+import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 /**
- * Serviço de domínio responsável pelas regras de negócio relacionadas à análise de solicitações de crédito.
+ * Serviço de domínio responsável pelas regras de negócio relacionadas à análise de créditos.
  * 
  * Este serviço contém APENAS regras de domínio, sem dependências de infraestrutura.
  */
@@ -15,20 +15,20 @@ import java.time.LocalDateTime;
 public class AnaliseSolicitacaoCreditoService {
 
     /**
-     * Analisa uma solicitação de crédito, aplicando as regras de negócio.
+     * Analisa um crédito, aplicando as regras de negócio.
      * 
-     * @param solicitacao A solicitação a ser analisada
+     * @param credito O crédito a ser analisado
      * @param novoStatus O novo status a ser aplicado (APROVADO ou REPROVADO)
      * @param comentario O comentário da análise
-     * @throws IllegalStateException Se a solicitação não estiver em EM_ANALISE
+     * @throws IllegalStateException Se o crédito não estiver em EM_ANALISE
      */
-    public void analisarSolicitacao(
-            SolicitacaoCredito solicitacao,
-            StatusSolicitacao novoStatus,
+    public void analisarCredito(
+            Credito credito,
+            StatusCredito novoStatus,
             String comentario) {
 
-        if (solicitacao == null) {
-            throw new IllegalArgumentException("Solicitação não pode ser nula");
+        if (credito == null) {
+            throw new IllegalArgumentException("Crédito não pode ser nulo");
         }
 
         if (novoStatus == null) {
@@ -36,18 +36,18 @@ public class AnaliseSolicitacaoCreditoService {
         }
 
         // Regra de negócio: só permite análise se status atual == EM_ANALISE
-        if (solicitacao.getStatus() != StatusSolicitacao.EM_ANALISE) {
+        if (credito.getStatus() != StatusCredito.EM_ANALISE) {
             throw new IllegalStateException(
                     String.format(
-                            "Não é possível analisar uma solicitação com status '%s'. " +
-                            "Apenas solicitações com status 'EM_ANALISE' podem ser analisadas.",
-                            solicitacao.getStatus()
+                            "Não é possível analisar um crédito com status '%s'. " +
+                            "Apenas créditos com status 'EM_ANALISE' podem ser analisados.",
+                            credito.getStatus()
                     )
             );
         }
 
         // Regra de negócio: novo status deve ser APROVADO ou REPROVADO
-        if (novoStatus != StatusSolicitacao.APROVADO && novoStatus != StatusSolicitacao.REPROVADO) {
+        if (novoStatus != StatusCredito.APROVADO && novoStatus != StatusCredito.REPROVADO) {
             throw new IllegalArgumentException(
                     String.format(
                             "Status '%s' não é válido para análise. " +
@@ -57,10 +57,10 @@ public class AnaliseSolicitacaoCreditoService {
             );
         }
 
-        // Atualizar a solicitação com os dados da análise
-        solicitacao.setStatus(novoStatus);
-        solicitacao.setComentarioAnalise(comentario);
-        solicitacao.setDataAnalise(LocalDateTime.now());
+        // Atualizar o crédito com os dados da análise
+        credito.setStatus(novoStatus);
+        credito.setComentarioAnalise(comentario);
+        credito.setDataAnalise(LocalDateTime.now());
     }
 }
 
