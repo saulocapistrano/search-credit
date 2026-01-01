@@ -1,10 +1,12 @@
 package br.com.searchcredit.domain.entity;
 
+import br.com.searchcredit.domain.enums.StatusCredito;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "credito")
@@ -49,5 +51,23 @@ public class Credito {
     @Column(name = "base_calculo", nullable = false)
     private BigDecimal baseCalculo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = true, length = 20)
+    private StatusCredito status;
+
+    @Column(name = "nome_solicitante", nullable = true, length = 255)
+    private String nomeSolicitante;
+
+    @Column(name = "comprovante_url", nullable = true, length = 500)
+    private String comprovanteUrl;
+
+    @Column(name = "data_solicitacao", nullable = true)
+    private LocalDateTime dataSolicitacao;
+
+    @Column(name = "comentario_analise", nullable = true, columnDefinition = "TEXT")
+    private String comentarioAnalise;
+
+    @Column(name = "data_analise", nullable = true)
+    private LocalDateTime dataAnalise;
 
 }
