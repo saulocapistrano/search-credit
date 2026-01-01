@@ -1,6 +1,11 @@
 spring:
   profiles:
     active: dev
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
 
 ---
 spring:
@@ -27,9 +32,14 @@ spring:
 
   kafka:
     bootstrap-servers: search-credit-kafka:9092
+    consumer:
+      group-id: search-credit-group
+      auto-offset-reset: earliest
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      missing-topics-fatal: false
     properties:
       spring.json.add.type.headers: false
     template:
@@ -37,6 +47,10 @@ spring:
 
 server:
   port: 8189
+  compression:
+    enabled: false
+  http2:
+    enabled: false
 
 minio:
   endpoint: http://search-credit-minio:9000
