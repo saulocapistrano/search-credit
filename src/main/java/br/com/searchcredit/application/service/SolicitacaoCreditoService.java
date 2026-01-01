@@ -3,9 +3,7 @@ package br.com.searchcredit.application.service;
 import br.com.searchcredit.application.dto.solicitacao.AtualizarStatusRequestDto;
 import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoRequestDto;
 import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoResponseDto;
-import br.com.searchcredit.application.mapper.SolicitacaoCreditoMapper;
 import br.com.searchcredit.domain.entity.Credito;
-import br.com.searchcredit.domain.entity.SolicitacaoCredito;
 import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.CreditoRepository;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 public class SolicitacaoCreditoService {
 
     private final SolicitacaoCreditoRepository repository;
-    private final SolicitacaoCreditoMapper mapper;
     private final CreditoWorkflowService creditoWorkflowService;
     private final CreditoRepository creditoRepository;
 
@@ -103,6 +100,21 @@ public class SolicitacaoCreditoService {
             case APROVADO -> StatusSolicitacao.APROVADO;
             case REPROVADO -> StatusSolicitacao.REPROVADO;
             case CONSTITUIDO -> StatusSolicitacao.EM_ANALISE; // Fallback para CONSTITUIDO
+        };
+    }
+
+    /**
+     * Converte StatusSolicitacao para StatusCredito.
+     */
+    private StatusCredito convertStatusSolicitacaoToStatusCredito(StatusSolicitacao statusSolicitacao) {
+        if (statusSolicitacao == null) {
+            return null;
+        }
+
+        return switch (statusSolicitacao) {
+            case EM_ANALISE -> StatusCredito.EM_ANALISE;
+            case APROVADO -> StatusCredito.APROVADO;
+            case REPROVADO -> StatusCredito.REPROVADO;
         };
     }
 
@@ -192,8 +204,8 @@ public class SolicitacaoCreditoService {
 
     @Transactional
     public Optional<SolicitacaoCreditoResponseDto> atualizarStatus(Long id, AtualizarStatusRequestDto requestDto) {
-        return repository.findById(id)
-                .map(solicitacao -> {
+        return creditoRepository.findById(id)
+                .map(credito -> {
                     // Bloquear mudança direta para APROVADO ou REPROVADO
                     // Esses status só podem ser definidos através do fluxo de análise (/analise)
                     if (requestDto.getStatus() == StatusSolicitacao.APROVADO || 
@@ -207,9 +219,13 @@ public class SolicitacaoCreditoService {
                                 )
                         );
                     }
-                    solicitacao.setStatus(requestDto.getStatus());
-                    SolicitacaoCredito updated = repository.save(solicitacao);
-                    return mapper.toResponse(updated);
+                    
+                    // Converter StatusSolicitacao para StatusCredito
+                    StatusCredito novoStatusCredito = convertStatusSolicitacaoToStatusCredito(requestDto.getStatus());
+                    credito.setStatus(novoStatusCredito);
+                    
+                    Credito updated = creditoRepository.save(credito);
+                    return toResponseDto(updated);
                 });
     }
 }
