@@ -5,6 +5,7 @@ import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.CreditoJpaRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -53,6 +54,45 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     @Override
     public Optional<Credito> findById(Long id) {
         return jpaRepository.findById(id);
+    }
+
+    @Override
+    public List<Credito> findAll() {
+        return jpaRepository.findAll();
+    }
+
+    @Override
+    public List<Credito> findByNumeroCreditoList(String numeroCredito) {
+        return jpaRepository.findByNumeroCreditoList(numeroCredito);
+    }
+
+    @Override
+    public List<Credito> findByNumeroNfseList(String numeroNfse) {
+        return jpaRepository.findByNumeroNfseList(numeroNfse);
+    }
+
+    @Override
+    public List<Credito> findByNomeSolicitante(String nomeSolicitante) {
+        return jpaRepository.findByNomeSolicitante(nomeSolicitante);
+    }
+
+    @Override
+    public Page<Credito> findAll(int page, int size, String sortBy, String sortDir) {
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? org.springframework.data.domain.Sort.by(sortBy).descending()
+                : org.springframework.data.domain.Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return jpaRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<Credito> findAllOrderByNumeroCreditoDesc() {
+        return jpaRepository.findAllOrderByNumeroCreditoDesc();
+    }
+
+    @Override
+    public List<Credito> findAllOrderByNumeroNfseDesc() {
+        return jpaRepository.findAllOrderByNumeroNfseDesc();
     }
 
 }
