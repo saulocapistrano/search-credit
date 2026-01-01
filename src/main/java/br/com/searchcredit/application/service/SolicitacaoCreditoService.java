@@ -7,13 +7,9 @@ import br.com.searchcredit.application.mapper.SolicitacaoCreditoMapper;
 import br.com.searchcredit.domain.entity.SolicitacaoCredito;
 import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
-import br.com.searchcredit.infrastructure.repository.jpa.SolicitacaoCreditoJpaRepository;
 import br.com.searchcredit.infrastructure.storage.MinioStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +24,6 @@ import java.util.stream.Collectors;
 public class SolicitacaoCreditoService {
 
     private final SolicitacaoCreditoRepository repository;
-    private final SolicitacaoCreditoJpaRepository jpaRepository;
     private final MinioStorageService minioStorageService;
     private final SolicitacaoCreditoMapper mapper;
 
@@ -48,7 +43,7 @@ public class SolicitacaoCreditoService {
                 .dataConstituicao(requestDto.getDataConstituicao())
                 .valorIssqn(requestDto.getValorIssqn())
                 .tipoCredito(requestDto.getTipoCredito())
-                .simplesNacional(requestDto.getSimplesNacional())
+                .simplesNacional(requestDto.getSimplesNacional() != null ? requestDto.getSimplesNacional() : false)
                 .aliquota(requestDto.getAliquota())
                 .valorFaturado(requestDto.getValorFaturado())
                 .valorDeducao(requestDto.getValorDeducao())
@@ -82,22 +77,17 @@ public class SolicitacaoCreditoService {
     }
 
     public Page<SolicitacaoCreditoResponseDto> listarPorSolicitante(String nomeSolicitante, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SolicitacaoCredito> solicitacoes = jpaRepository.findByNomeSolicitante(nomeSolicitante, pageable);
+        Page<SolicitacaoCredito> solicitacoes = repository.findByNomeSolicitante(nomeSolicitante, page, size);
         return solicitacoes.map(mapper::toResponse);
     }
 
     public Page<SolicitacaoCreditoResponseDto> listarTodas(int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("desc") 
-                ? Sort.by(sortBy).descending() 
-                : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<SolicitacaoCredito> solicitacoes = jpaRepository.findAll(pageable);
+        Page<SolicitacaoCredito> solicitacoes = repository.findAll(page, size, sortBy, sortDir);
         return solicitacoes.map(mapper::toResponse);
     }
 
     public String gerarProximoNumeroCredito() {
-        List<SolicitacaoCredito> solicitacoes = jpaRepository.findAllOrderByNumeroCreditoDesc();
+        List<SolicitacaoCredito> solicitacoes = repository.findAllOrderByNumeroCreditoDesc();
         if (solicitacoes.isEmpty()) {
             return "CRED000001";
         }
@@ -116,7 +106,7 @@ public class SolicitacaoCreditoService {
     }
 
     public String gerarProximoNumeroNfse() {
-        List<SolicitacaoCredito> solicitacoes = jpaRepository.findAllOrderByNumeroNfseDesc();
+        List<SolicitacaoCredito> solicitacoes = repository.findAllOrderByNumeroNfseDesc();
         if (solicitacoes.isEmpty()) {
             return "NFSE1000001";
         }
@@ -155,6 +145,19 @@ public class SolicitacaoCreditoService {
     public Optional<SolicitacaoCreditoResponseDto> atualizarStatus(Long id, AtualizarStatusRequestDto requestDto) {
         return repository.findById(id)
                 .map(solicitacao -> {
+                    // Bloquear mudança direta para APROVADO ou REPROVADO
+                    // Esses status só podem ser definidos através do fluxo de análise (/analise)
+                    if (requestDto.getStatus() == StatusSolicitacao.APROVADO || 
+                        requestDto.getStatus() == StatusSolicitacao.REPROVADO) {
+                        throw new IllegalStateException(
+                                String.format(
+                                        "Não é possível alterar o status diretamente para '%s'. " +
+                                        "Use o endpoint /api/solicitacoes/%d/analise para realizar a análise da solicitação.",
+                                        requestDto.getStatus(),
+                                        id
+                                )
+                        );
+                    }
                     solicitacao.setStatus(requestDto.getStatus());
                     SolicitacaoCredito updated = repository.save(solicitacao);
                     return mapper.toResponse(updated);
