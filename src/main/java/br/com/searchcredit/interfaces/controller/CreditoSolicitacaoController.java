@@ -37,13 +37,13 @@ public class CreditoSolicitacaoController {
     @GetMapping("/next-numero-credito")
     public ResponseEntity<String> gerarNumeroCredito() {
         String numero = solicitacaoCreditoService.gerarProximoNumeroCredito();
-        return ResponseEntity.ok(numero);
+        return ResponseEntity.ok().body(numero);
     }
 
     @GetMapping("/next-numero-nfse")
     public ResponseEntity<String> gerarNumeroNfse() {
         String numero = solicitacaoCreditoService.gerarProximoNumeroNfse();
-        return ResponseEntity.ok(numero);
+        return ResponseEntity.ok().body(numero);
     }
 
     @GetMapping
@@ -53,7 +53,7 @@ public class CreditoSolicitacaoController {
             @RequestParam(defaultValue = "10") int size) {
         Page<SolicitacaoCreditoResponseDto> pagina = solicitacaoCreditoService
                 .listarPorSolicitante(nomeSolicitante, page, size);
-        return ResponseEntity.ok(pagina);
+        return ResponseEntity.ok().body(pagina);
     }
 
     @GetMapping("/todas")
@@ -64,22 +64,7 @@ public class CreditoSolicitacaoController {
             @RequestParam(defaultValue = "desc") String sortDir) {
         Page<SolicitacaoCreditoResponseDto> pagina = solicitacaoCreditoService
                 .listarTodas(page, size, sortBy, sortDir);
-        return ResponseEntity.ok(pagina);
-    }
-
-    @GetMapping("/credito/{numeroCredito}")
-    public ResponseEntity<?> buscarPorNumeroCredito(
-            @PathVariable String numeroCredito) {
-        List<SolicitacaoCreditoResponseDto> solicitacoes = 
-                solicitacaoCreditoService.listarPorNumeroCredito(numeroCredito);
-        
-        if (solicitacoes.isEmpty()) {
-            Map<String, String> erro = new HashMap<>();
-            erro.put("mensagem", "Crédito não encontrado para o número informado");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
-        }
-        
-        return ResponseEntity.ok(solicitacoes);
+        return ResponseEntity.ok().body(pagina);
     }
 
     @GetMapping("/nfse/{numeroNfse}")
@@ -88,19 +73,19 @@ public class CreditoSolicitacaoController {
         List<SolicitacaoCreditoResponseDto> solicitacoes = 
                 solicitacaoCreditoService.listarPorNumeroNfse(numeroNfse);
         
-        if (solicitacoes.isEmpty()) {
+        if (solicitacoes == null || solicitacoes.isEmpty()) {
             Map<String, String> erro = new HashMap<>();
             erro.put("mensagem", "Nenhum crédito encontrado para o número de NFSe informado");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
         }
         
-        return ResponseEntity.ok(solicitacoes);
+        return ResponseEntity.ok().body(solicitacoes);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SolicitacaoCreditoResponseDto> buscarPorId(@PathVariable Long id) {
         return solicitacaoCreditoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
+                .map(dto -> ResponseEntity.ok().body(dto))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -109,7 +94,7 @@ public class CreditoSolicitacaoController {
             @PathVariable Long id,
             @RequestBody @Valid AtualizarStatusRequestDto requestDto) {
         return solicitacaoCreditoService.atualizarStatus(id, requestDto)
-                .map(ResponseEntity::ok)
+                .map(dto -> ResponseEntity.ok().body(dto))
                 .orElse(ResponseEntity.notFound().build());
     }
 
