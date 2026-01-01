@@ -1,6 +1,7 @@
 package br.com.searchcredit.infrastructure.repository.impl;
 
 import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.repository.jpa.CreditoJpaRepository;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,11 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     }
 
     @Override
+    public Credito save(Credito credito) {
+        return jpaRepository.save(credito);
+    }
+
+    @Override
     public Optional<Credito> findByNumeroCredito(String numeroCredito) {
         return jpaRepository.findByNumeroCredito(numeroCredito);
     }
@@ -32,6 +38,21 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     @Override
     public Page<Credito> findAll(Pageable pageable) {
         return jpaRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Credito> findByNomeSolicitante(String nomeSolicitante, Pageable pageable) {
+        return jpaRepository.findByNomeSolicitante(nomeSolicitante, pageable);
+    }
+
+    @Override
+    public List<Credito> findByStatus(StatusCredito status) {
+        return jpaRepository.findByStatus(status);
+    }
+
+    @Override
+    public Optional<Credito> findById(Long id) {
+        return jpaRepository.findById(id);
     }
 
 }
