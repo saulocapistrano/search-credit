@@ -8,8 +8,11 @@ import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.entity.SolicitacaoCredito;
 import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.enums.StatusSolicitacao;
+import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ public class SolicitacaoCreditoService {
     private final SolicitacaoCreditoRepository repository;
     private final SolicitacaoCreditoMapper mapper;
     private final CreditoWorkflowService creditoWorkflowService;
+    private final CreditoRepository creditoRepository;
 
     @Transactional
     public SolicitacaoCreditoResponseDto criarSolicitacao(
@@ -103,40 +107,41 @@ public class SolicitacaoCreditoService {
     }
 
     public List<SolicitacaoCreditoResponseDto> listarTodas() {
-        return repository.findAll().stream()
-                .map(mapper::toResponse)
+        return creditoRepository.findAll().stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public List<SolicitacaoCreditoResponseDto> buscarTodas() {
-        return repository.findAll().stream()
-                .map(mapper::toResponse)
+        return creditoRepository.findAll().stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public List<SolicitacaoCreditoResponseDto> listarPorSolicitante(String nomeSolicitante) {
-        return repository.findByNomeSolicitante(nomeSolicitante).stream()
-                .map(mapper::toResponse)
+        return creditoRepository.findByNomeSolicitante(nomeSolicitante).stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public Page<SolicitacaoCreditoResponseDto> listarPorSolicitante(String nomeSolicitante, int page, int size) {
-        Page<SolicitacaoCredito> solicitacoes = repository.findByNomeSolicitante(nomeSolicitante, page, size);
-        return solicitacoes.map(mapper::toResponse);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Credito> creditos = creditoRepository.findByNomeSolicitante(nomeSolicitante, pageable);
+        return creditos.map(this::toResponseDto);
     }
 
     public Page<SolicitacaoCreditoResponseDto> listarTodas(int page, int size, String sortBy, String sortDir) {
-        Page<SolicitacaoCredito> solicitacoes = repository.findAll(page, size, sortBy, sortDir);
-        return solicitacoes.map(mapper::toResponse);
+        Page<Credito> creditos = creditoRepository.findAll(page, size, sortBy, sortDir);
+        return creditos.map(this::toResponseDto);
     }
 
     public String gerarProximoNumeroCredito() {
-        List<SolicitacaoCredito> solicitacoes = repository.findAllOrderByNumeroCreditoDesc();
-        if (solicitacoes.isEmpty()) {
+        List<Credito> creditos = creditoRepository.findAllOrderByNumeroCreditoDesc();
+        if (creditos.isEmpty()) {
             return "CRED000001";
         }
         
-        String ultimoNumero = solicitacoes.get(0).getNumeroCredito();
+        String ultimoNumero = creditos.get(0).getNumeroCredito();
         if (ultimoNumero != null && ultimoNumero.startsWith("CRED")) {
             try {
                 String numeroStr = ultimoNumero.substring(4);
@@ -150,12 +155,12 @@ public class SolicitacaoCreditoService {
     }
 
     public String gerarProximoNumeroNfse() {
-        List<SolicitacaoCredito> solicitacoes = repository.findAllOrderByNumeroNfseDesc();
-        if (solicitacoes.isEmpty()) {
+        List<Credito> creditos = creditoRepository.findAllOrderByNumeroNfseDesc();
+        if (creditos.isEmpty()) {
             return "NFSE1000001";
         }
         
-        String ultimoNumero = solicitacoes.get(0).getNumeroNfse();
+        String ultimoNumero = creditos.get(0).getNumeroNfse();
         if (ultimoNumero != null && ultimoNumero.startsWith("NFSE")) {
             try {
                 String numeroStr = ultimoNumero.substring(4);
@@ -169,20 +174,20 @@ public class SolicitacaoCreditoService {
     }
 
     public List<SolicitacaoCreditoResponseDto> listarPorNumeroCredito(String numeroCredito) {
-        return repository.findByNumeroCredito(numeroCredito).stream()
-                .map(mapper::toResponse)
+        return creditoRepository.findByNumeroCreditoList(numeroCredito).stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public List<SolicitacaoCreditoResponseDto> listarPorNumeroNfse(String numeroNfse) {
-        return repository.findByNumeroNfse(numeroNfse).stream()
-                .map(mapper::toResponse)
+        return creditoRepository.findByNumeroNfseList(numeroNfse).stream()
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public Optional<SolicitacaoCreditoResponseDto> buscarPorId(Long id) {
-        return repository.findById(id)
-                .map(mapper::toResponse);
+        return creditoRepository.findById(id)
+                .map(this::toResponseDto);
     }
 
     @Transactional
