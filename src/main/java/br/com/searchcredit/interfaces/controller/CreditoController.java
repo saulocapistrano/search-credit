@@ -21,13 +21,16 @@ public class CreditoController {
     @GetMapping("/{numeroNfse}")
     public ResponseEntity<List<CreditoResponseDto>> findByNumeroNfse(@PathVariable String numeroNfse) {
         List<CreditoResponseDto> creditos = creditoService.findAllByNumeroFnse(numeroNfse);
-        return ResponseEntity.ok(creditos);
+        if (creditos == null || creditos.isEmpty()) {
+            return ResponseEntity.ok().body(List.of());
+        }
+        return ResponseEntity.ok().body(creditos);
     }
 
     @GetMapping("/credito/{numeroCredito}")
     public ResponseEntity<CreditoResponseDto> findByNumeroCredito(@PathVariable String numeroCredito) {
         return creditoService.findByNumeroCredito(numeroCredito)
-                .map(ResponseEntity::ok)
+                .map(dto -> ResponseEntity.ok().body(dto))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
