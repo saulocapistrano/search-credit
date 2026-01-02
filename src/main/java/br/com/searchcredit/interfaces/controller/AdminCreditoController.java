@@ -1,6 +1,6 @@
 package br.com.searchcredit.interfaces.controller;
 
-import br.com.searchcredit.application.dto.CreditoResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
 import br.com.searchcredit.application.service.CreditoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
