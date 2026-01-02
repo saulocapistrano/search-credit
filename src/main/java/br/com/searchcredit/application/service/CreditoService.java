@@ -1,7 +1,8 @@
 package br.com.searchcredit.application.service;
 
-import br.com.searchcredit.application.dto.CreditoResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
@@ -39,15 +40,15 @@ public class CreditoService {
         return result;
     }
 
-    public List<CreditoResponseDto> findAllByNumeroFnse(String numeroFnse){
-        List<CreditoResponseDto> result = repository.findAllByNumeroNfse(numeroFnse)
+    public List<CreditoResponseDto> findAllByNumeroNfse(String numeroNfse){
+        List<CreditoResponseDto> result = repository.findAllByNumeroNfse(numeroNfse)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
         try {
-            kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroNfse", numeroFnse));
+            kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroNfse", numeroNfse));
         } catch (Exception e) {
-            log.warn("Falha ao publicar evento Kafka para consulta por número NFS-e: {}", numeroFnse, e);
+            log.warn("Falha ao publicar evento Kafka para consulta por número NFS-e: {}", numeroNfse, e);
         }
         return result;
     }
@@ -63,18 +64,39 @@ public class CreditoService {
                 .map(this::toDto);
     }
 
+    public Optional<CreditoResponseDto> findById(Long id) {
+        return repository.findById(id)
+                .map(this::toDto);
+    }
+
+    public Optional<CreditoResponseDto> updateStatus(Long id, StatusCredito novoStatus) {
+        return repository.findById(id)
+                .map(credito -> {
+                    credito.setStatus(novoStatus);
+                    Credito updated = repository.save(credito);
+                    return toDto(updated);
+                });
+    }
+
     private CreditoResponseDto toDto(Credito credito){
-        return  CreditoResponseDto.builder()
+        return CreditoResponseDto.builder()
+                .id(credito.getId())
                 .numeroCredito(credito.getNumeroCredito())
                 .numeroNfse(credito.getNumeroNfse())
                 .dataConstituicao(credito.getDataConstituicao())
                 .valorIssqn(credito.getValorIssqn())
                 .tipoCredito(credito.getTipoCredito())
-                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
+                .simplesNacional(credito.isSimplesNacional())
                 .aliquota(credito.getAliquota())
                 .valorFaturado(credito.getValorFaturado())
                 .valorDeducao(credito.getValorDeducao())
                 .baseCalculo(credito.getBaseCalculo())
+                .status(credito.getStatus())
+                .nomeSolicitante(credito.getNomeSolicitante())
+                .comprovanteUrl(credito.getComprovanteUrl())
+                .dataSolicitacao(credito.getDataSolicitacao())
+                .comentarioAnalise(credito.getComentarioAnalise())
+                .dataAnalise(credito.getDataAnalise())
                 .build();
     }
 
