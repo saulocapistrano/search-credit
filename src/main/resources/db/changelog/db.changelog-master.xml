@@ -12,5 +12,8 @@
     <include file="db/changelog/005-add-constraints-indexes.xml"/>
     <include file="db/changelog/006-relax-notnull-solicitacao-credit.xml"/>
     <include file="db/changelog/007-insert-more-creditos.xml"/>
+    <include file="db/changelog/008-add-workflow-fields-to-credito.xml"/>
+    <include file="db/changelog/009-migrate-solicitacao-to-credito.xml"/>
+    <include file="db/changelog/010-drop-table-solicitacao-credito.xml"/>
 
 </databaseChangeLog>
