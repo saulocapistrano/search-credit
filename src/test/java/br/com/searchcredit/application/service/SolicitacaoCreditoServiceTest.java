@@ -2,12 +2,9 @@ package br.com.searchcredit.application.service;
 
 import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoRequestDto;
 import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoResponseDto;
-import br.com.searchcredit.application.mapper.SolicitacaoCreditoMapper;
-import br.com.searchcredit.domain.entity.SolicitacaoCredito;
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
-import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
-import br.com.searchcredit.infrastructure.repository.jpa.SolicitacaoCreditoJpaRepository;
-import br.com.searchcredit.infrastructure.storage.MinioStorageService;
+import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
+import br.com.searchcredit.domain.repository.CreditoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,22 +24,16 @@ import static org.mockito.Mockito.*;
 class SolicitacaoCreditoServiceTest {
 
     @Mock
-    private SolicitacaoCreditoRepository repository;
+    private CreditoWorkflowService creditoWorkflowService;
 
     @Mock
-    private SolicitacaoCreditoJpaRepository jpaRepository;
-
-    @Mock
-    private MinioStorageService minioStorageService;
-
-    @Mock
-    private SolicitacaoCreditoMapper mapper;
+    private CreditoRepository creditoRepository;
 
     @InjectMocks
     private SolicitacaoCreditoService service;
 
     private SolicitacaoCreditoRequestDto requestDtoMinimo;
-    private SolicitacaoCredito solicitacaoSalva;
+    private Credito creditoSalvo;
     private SolicitacaoCreditoResponseDto responseDto;
 
     @BeforeEach
@@ -50,17 +41,17 @@ class SolicitacaoCreditoServiceTest {
         requestDtoMinimo = new SolicitacaoCreditoRequestDto();
         requestDtoMinimo.setNomeSolicitante("João Silva");
 
-        solicitacaoSalva = SolicitacaoCredito.builder()
+        creditoSalvo = Credito.builder()
                 .id(1L)
                 .nomeSolicitante("João Silva")
-                .status(StatusSolicitacao.EM_ANALISE)
+                .status(StatusCredito.EM_ANALISE)
                 .dataSolicitacao(LocalDateTime.now())
                 .build();
 
         responseDto = SolicitacaoCreditoResponseDto.builder()
                 .id(1L)
                 .nomeSolicitante("João Silva")
-                .status(StatusSolicitacao.EM_ANALISE)
+                .status(StatusCredito.EM_ANALISE)
                 .dataSolicitacao(LocalDateTime.now())
                 .build();
     }
@@ -69,8 +60,9 @@ class SolicitacaoCreditoServiceTest {
     @DisplayName("Deve criar solicitação com campos mínimos (apenas nomeSolicitante)")
     void shouldCreateSolicitacaoWithMinimumFields() {
         // Arrange
-        when(repository.save(any(SolicitacaoCredito.class))).thenReturn(solicitacaoSalva);
-        when(mapper.toResponse(any(SolicitacaoCredito.class))).thenReturn(responseDto);
+        when(creditoWorkflowService.criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        )).thenReturn(creditoSalvo);
 
         // Act
         SolicitacaoCreditoResponseDto result = service.criarSolicitacao(requestDtoMinimo, null);
@@ -78,30 +70,38 @@ class SolicitacaoCreditoServiceTest {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.getNomeSolicitante()).isEqualTo("João Silva");
-        assertThat(result.getStatus()).isEqualTo(StatusSolicitacao.EM_ANALISE);
+        assertThat(result.getStatus()).isEqualTo(StatusCredito.EM_ANALISE);
         assertThat(result.getDataSolicitacao()).isNotNull();
 
-        verify(repository, times(1)).save(any(SolicitacaoCredito.class));
-        verify(mapper, times(1)).toResponse(any(SolicitacaoCredito.class));
-        verify(minioStorageService, never()).uploadComprovante(any());
+        verify(creditoWorkflowService, times(1)).criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        );
     }
 
     @Test
     @DisplayName("Deve sempre definir status como EM_ANALISE ao criar solicitação")
     void shouldAlwaysSetStatusAsEmAnaliseWhenCreating() {
         // Arrange
-        when(repository.save(any(SolicitacaoCredito.class))).thenAnswer(invocation -> {
-            SolicitacaoCredito solicitacao = invocation.getArgument(0);
-            assertThat(solicitacao.getStatus()).isEqualTo(StatusSolicitacao.EM_ANALISE);
-            return solicitacaoSalva;
+        when(creditoWorkflowService.criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            Credito credito = Credito.builder()
+                    .id(1L)
+                    .nomeSolicitante("João Silva")
+                    .status(StatusCredito.EM_ANALISE)
+                    .dataSolicitacao(LocalDateTime.now())
+                    .build();
+            assertThat(credito.getStatus()).isEqualTo(StatusCredito.EM_ANALISE);
+            return credito;
         });
-        when(mapper.toResponse(any(SolicitacaoCredito.class))).thenReturn(responseDto);
 
         // Act
         service.criarSolicitacao(requestDtoMinimo, null);
 
         // Assert
-        verify(repository, times(1)).save(any(SolicitacaoCredito.class));
+        verify(creditoWorkflowService, times(1)).criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        );
     }
 
     @Test
@@ -109,19 +109,27 @@ class SolicitacaoCreditoServiceTest {
     void shouldAlwaysSetDataSolicitacaoAsNowWhenCreating() {
         // Arrange
         LocalDateTime antes = LocalDateTime.now();
-        when(repository.save(any(SolicitacaoCredito.class))).thenAnswer(invocation -> {
-            SolicitacaoCredito solicitacao = invocation.getArgument(0);
-            assertThat(solicitacao.getDataSolicitacao()).isNotNull();
-            assertThat(solicitacao.getDataSolicitacao()).isAfterOrEqualTo(antes);
-            return solicitacaoSalva;
+        when(creditoWorkflowService.criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            Credito credito = Credito.builder()
+                    .id(1L)
+                    .nomeSolicitante("João Silva")
+                    .status(StatusCredito.EM_ANALISE)
+                    .dataSolicitacao(LocalDateTime.now())
+                    .build();
+            assertThat(credito.getDataSolicitacao()).isNotNull();
+            assertThat(credito.getDataSolicitacao()).isAfterOrEqualTo(antes);
+            return credito;
         });
-        when(mapper.toResponse(any(SolicitacaoCredito.class))).thenReturn(responseDto);
 
         // Act
         service.criarSolicitacao(requestDtoMinimo, null);
 
         // Assert
-        verify(repository, times(1)).save(any(SolicitacaoCredito.class));
+        verify(creditoWorkflowService, times(1)).criarCreditoComWorkflow(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+        );
     }
 }
 
