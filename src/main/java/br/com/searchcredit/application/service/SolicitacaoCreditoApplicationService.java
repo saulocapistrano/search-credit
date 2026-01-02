@@ -2,7 +2,6 @@ package br.com.searchcredit.application.service;
 
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.enums.StatusCredito;
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.domain.service.AnaliseSolicitacaoCreditoService;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
@@ -34,13 +33,13 @@ public class SolicitacaoCreditoApplicationService {
      * Responde à análise de um crédito.
      * 
      * @param creditoId ID do crédito a ser analisado
-     * @param status Novo status (APROVADO ou REPROVADO) - StatusSolicitacao para compatibilidade
+     * @param status Novo status (APROVADO ou REPROVADO)
      * @param comentario Comentário da análise
      * @throws IllegalArgumentException Se o crédito não for encontrado
      * @throws IllegalStateException Se o crédito não estiver em EM_ANALISE
      */
     @Transactional
-    public void responderAnalise(Long creditoId, StatusSolicitacao status, String comentario) {
+    public void responderAnalise(Long creditoId, StatusCredito status, String comentario) {
         log.info("Iniciando análise do crédito ID: {}", creditoId);
 
         // 1. Buscar crédito pelo ID
@@ -49,42 +48,47 @@ public class SolicitacaoCreditoApplicationService {
                         String.format("Crédito com ID %d não encontrado", creditoId)
                 ));
 
-        // 2. Converter StatusSolicitacao para StatusCredito
-        StatusCredito statusCredito = convertStatusSolicitacaoToStatusCredito(status);
+        // 2. Delegar regra de negócio para o Domain Service
+        analiseService.analisarCredito(credito, status, comentario);
 
-        // 3. Delegar regra de negócio para o Domain Service
-        analiseService.analisarCredito(credito, statusCredito, comentario);
-
-        // 4. Salvar no repositório
+        // 3. Salvar no repositório
         Credito creditoAtualizado = creditoRepository.save(credito);
-        log.info("Crédito ID: {} atualizado com status: {}", creditoId, statusCredito);
+        log.info("Crédito ID: {} atualizado com status: {}", creditoId, status);
 
-        // 5. Publicar evento Kafka (mantém compatibilidade com evento existente)
-        SolicitacaoCreditoAnalisadaEvent event = new SolicitacaoCreditoAnalisadaEvent(
+        // 4. Publicar eventos Kafka (mantém compatibilidade com evento legado + novo evento de domínio)
+        
+        // 4.1. Publicar evento legado (compatibilidade com consumidores existentes)
+        // Converter StatusCredito para StatusSolicitacao apenas para o evento legado
+        br.com.searchcredit.domain.enums.StatusSolicitacao statusLegado = convertStatusCreditoToStatusSolicitacao(status);
+        SolicitacaoCreditoAnalisadaEvent eventLegado = new SolicitacaoCreditoAnalisadaEvent(
                 creditoAtualizado.getId(),
                 creditoAtualizado.getNumeroCredito(),
                 creditoAtualizado.getNomeSolicitante(),
-                status, // Mantém StatusSolicitacao para compatibilidade com evento Kafka
+                statusLegado, // Conversão apenas para compatibilidade com evento Kafka legado
                 creditoAtualizado.getDataAnalise(),
                 creditoAtualizado.getComentarioAnalise()
         );
+        kafkaEventPublisher.publishSolicitacaoAnalisada(eventLegado);
+        log.info("SolicitacaoCreditoAnalisadaEvent (legado) publicado para crédito ID: {}", creditoId);
 
-        kafkaEventPublisher.publishSolicitacaoAnalisada(event);
-        log.info("Evento de análise publicado para crédito ID: {}", creditoId);
+        // 4.2. Publicar novo evento de domínio CreditoAnalisadoEvent
+        kafkaEventPublisher.publishCreditoAnalisado(creditoAtualizado);
+        log.info("CreditoAnalisadoEvent (novo) publicado para crédito ID: {}", creditoId);
     }
 
     /**
-     * Converte StatusSolicitacao para StatusCredito.
+     * Converte StatusCredito para StatusSolicitacao (apenas para compatibilidade com evento Kafka legado).
      */
-    private StatusCredito convertStatusSolicitacaoToStatusCredito(StatusSolicitacao statusSolicitacao) {
-        if (statusSolicitacao == null) {
+    private br.com.searchcredit.domain.enums.StatusSolicitacao convertStatusCreditoToStatusSolicitacao(StatusCredito statusCredito) {
+        if (statusCredito == null) {
             return null;
         }
 
-        return switch (statusSolicitacao) {
-            case EM_ANALISE -> StatusCredito.EM_ANALISE;
-            case APROVADO -> StatusCredito.APROVADO;
-            case REPROVADO -> StatusCredito.REPROVADO;
+        return switch (statusCredito) {
+            case EM_ANALISE -> br.com.searchcredit.domain.enums.StatusSolicitacao.EM_ANALISE;
+            case APROVADO -> br.com.searchcredit.domain.enums.StatusSolicitacao.APROVADO;
+            case REPROVADO -> br.com.searchcredit.domain.enums.StatusSolicitacao.REPROVADO;
+            case CONSTITUIDO -> br.com.searchcredit.domain.enums.StatusSolicitacao.EM_ANALISE; // Fallback
         };
     }
 }
