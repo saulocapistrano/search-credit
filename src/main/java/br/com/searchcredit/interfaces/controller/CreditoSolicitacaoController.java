@@ -18,6 +18,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller legado para operações com solicitações de crédito.
+ * 
+ * @deprecated Este controller é legado e será removido em versão futura.
+ * Use {@link CreditoController} com o endpoint /api/creditos.
+ * 
+ * Este controller mantém compatibilidade com clientes existentes,
+ * mas novos desenvolvimentos devem usar /api/creditos.
+ */
+@Deprecated
 @RestController
 @RequestMapping("/api/solicitacoes")
 @RequiredArgsConstructor
