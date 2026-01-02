@@ -5,9 +5,7 @@ import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoRequest
 import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.enums.StatusCredito;
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
 import br.com.searchcredit.domain.repository.CreditoRepository;
-import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +22,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SolicitacaoCreditoService {
 
-    private final SolicitacaoCreditoRepository repository;
     private final CreditoWorkflowService creditoWorkflowService;
     private final CreditoRepository creditoRepository;
 
@@ -55,15 +52,11 @@ public class SolicitacaoCreditoService {
 
     /**
      * Converte Credito para SolicitacaoCreditoResponseDto.
-     * Converte StatusCredito para StatusSolicitacao para manter compatibilidade.
      */
     private SolicitacaoCreditoResponseDto toResponseDto(Credito credito) {
         if (credito == null) {
             return null;
         }
-
-        // Converter StatusCredito para StatusSolicitacao
-        StatusSolicitacao statusSolicitacao = convertStatusCreditoToStatusSolicitacao(credito.getStatus());
 
         return SolicitacaoCreditoResponseDto.builder()
                 .id(credito.getId())
@@ -77,45 +70,13 @@ public class SolicitacaoCreditoService {
                 .valorFaturado(credito.getValorFaturado())
                 .valorDeducao(credito.getValorDeducao())
                 .baseCalculo(credito.getBaseCalculo())
-                .status(statusSolicitacao)
+                .status(credito.getStatus())
                 .nomeSolicitante(credito.getNomeSolicitante())
                 .comprovanteUrl(credito.getComprovanteUrl())
                 .dataSolicitacao(credito.getDataSolicitacao())
                 .comentarioAnalise(credito.getComentarioAnalise())
                 .dataAnalise(credito.getDataAnalise())
                 .build();
-    }
-
-    /**
-     * Converte StatusCredito para StatusSolicitacao.
-     * StatusCredito.CONSTITUIDO não existe em StatusSolicitacao, então retorna null ou EM_ANALISE.
-     */
-    private StatusSolicitacao convertStatusCreditoToStatusSolicitacao(StatusCredito statusCredito) {
-        if (statusCredito == null) {
-            return null;
-        }
-
-        return switch (statusCredito) {
-            case EM_ANALISE -> StatusSolicitacao.EM_ANALISE;
-            case APROVADO -> StatusSolicitacao.APROVADO;
-            case REPROVADO -> StatusSolicitacao.REPROVADO;
-            case CONSTITUIDO -> StatusSolicitacao.EM_ANALISE; // Fallback para CONSTITUIDO
-        };
-    }
-
-    /**
-     * Converte StatusSolicitacao para StatusCredito.
-     */
-    private StatusCredito convertStatusSolicitacaoToStatusCredito(StatusSolicitacao statusSolicitacao) {
-        if (statusSolicitacao == null) {
-            return null;
-        }
-
-        return switch (statusSolicitacao) {
-            case EM_ANALISE -> StatusCredito.EM_ANALISE;
-            case APROVADO -> StatusCredito.APROVADO;
-            case REPROVADO -> StatusCredito.REPROVADO;
-        };
     }
 
     public List<SolicitacaoCreditoResponseDto> listarTodas() {
@@ -208,8 +169,8 @@ public class SolicitacaoCreditoService {
                 .map(credito -> {
                     // Bloquear mudança direta para APROVADO ou REPROVADO
                     // Esses status só podem ser definidos através do fluxo de análise (/analise)
-                    if (requestDto.getStatus() == StatusSolicitacao.APROVADO || 
-                        requestDto.getStatus() == StatusSolicitacao.REPROVADO) {
+                    if (requestDto.getStatus() == StatusCredito.APROVADO || 
+                        requestDto.getStatus() == StatusCredito.REPROVADO) {
                         throw new IllegalStateException(
                                 String.format(
                                         "Não é possível alterar o status diretamente para '%s'. " +
@@ -220,10 +181,7 @@ public class SolicitacaoCreditoService {
                         );
                     }
                     
-                    // Converter StatusSolicitacao para StatusCredito
-                    StatusCredito novoStatusCredito = convertStatusSolicitacaoToStatusCredito(requestDto.getStatus());
-                    credito.setStatus(novoStatusCredito);
-                    
+                    credito.setStatus(requestDto.getStatus());
                     Credito updated = creditoRepository.save(credito);
                     return toResponseDto(updated);
                 });
