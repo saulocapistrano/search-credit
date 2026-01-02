@@ -1,6 +1,7 @@
 package br.com.searchcredit.infrastructure.kafka;
 
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
+import br.com.searchcredit.infrastructure.kafka.event.CreditoAnalisadoEvent;
 import br.com.searchcredit.infrastructure.kafka.event.SolicitacaoCreditoAnalisadaEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -49,6 +50,21 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, SolicitacaoCreditoAnalisadaEvent> analiseKafkaTemplate() {
         return new KafkaTemplate<>(analiseProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, CreditoAnalisadoEvent> creditoAnalisadoProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CreditoAnalisadoEvent> creditoAnalisadoKafkaTemplate() {
+        return new KafkaTemplate<>(creditoAnalisadoProducerFactory());
     }
 }
 
