@@ -1,8 +1,8 @@
 package br.com.searchcredit.infrastructure.config;
 
-import br.com.searchcredit.domain.entity.SolicitacaoCredito;
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
-import br.com.searchcredit.domain.repository.SolicitacaoCreditoRepository;
+import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
+import br.com.searchcredit.domain.repository.CreditoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -21,25 +21,25 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class DataSeederConfig implements CommandLineRunner {
 
-    private final SolicitacaoCreditoRepository repository;
+    private final CreditoRepository repository;
     private final Random random = new Random();
 
     @Override
     public void run(String... args) {
         if (repository.findAll().isEmpty()) {
             log.info("Banco de dados vazio. Iniciando seed de dados de teste...");
-            List<SolicitacaoCredito> solicitacoes = criarSolicitacoes();
-            for (SolicitacaoCredito solicitacao : solicitacoes) {
-                repository.save(solicitacao);
+            List<Credito> creditos = criarCreditos();
+            for (Credito credito : creditos) {
+                repository.save(credito);
             }
-            log.info("Seed concluído: {} solicitações de crédito inseridas", solicitacoes.size());
+            log.info("Seed concluído: {} créditos inseridos", creditos.size());
         } else {
             log.info("Banco de dados já contém dados. Seed não será executado.");
         }
     }
 
-    private List<SolicitacaoCredito> criarSolicitacoes() {
-        List<SolicitacaoCredito> solicitacoes = new ArrayList<>();
+    private List<Credito> criarCreditos() {
+        List<Credito> creditos = new ArrayList<>();
         
         // Dados baseados no script SQL fornecido - apenas números
         Object[][] dados = {
@@ -63,7 +63,7 @@ public class DataSeederConfig implements CommandLineRunner {
         };
         
         for (Object[] dadosItem : dados) {
-            SolicitacaoCredito solicitacao = SolicitacaoCredito.builder()
+            Credito credito = Credito.builder()
                     .numeroCredito((String) dadosItem[0])
                     .numeroNfse((String) dadosItem[1])
                     .dataConstituicao(LocalDate.now().minusDays((Integer) dadosItem[2]))
@@ -74,7 +74,7 @@ public class DataSeederConfig implements CommandLineRunner {
                     .valorFaturado(BigDecimal.valueOf((Double) dadosItem[7]))
                     .valorDeducao(BigDecimal.valueOf((Double) dadosItem[8]))
                     .baseCalculo(BigDecimal.valueOf((Double) dadosItem[9]))
-                    .status(StatusSolicitacao.EM_ANALISE)
+                    .status(StatusCredito.EM_ANALISE)
                     .nomeSolicitante("Usuário Teste")
                     .comprovanteUrl(null)
                     .dataSolicitacao(LocalDateTime.now().minusDays((Integer) dadosItem[2]))
@@ -82,10 +82,10 @@ public class DataSeederConfig implements CommandLineRunner {
                     .dataAnalise(null)
                     .build();
             
-            solicitacoes.add(solicitacao);
+            creditos.add(credito);
         }
         
-        return solicitacoes;
+        return creditos;
     }
 
     private BigDecimal gerarValorAleatorio(double min, double max) {
