@@ -1,0 +1,44 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="010" author="saulocapistrano">
+        <!-- Remover tabela solicitacao_credito (obsoleta após migração de dados) -->
+        <!-- Ordem segura: remover índices primeiro, depois a tabela -->
+        
+        <!-- Remover índices da tabela solicitacao_credito -->
+        <dropIndex 
+                indexName="idx_solicitacao_status"
+                tableName="solicitacao_credito"/>
+
+        <dropIndex 
+                indexName="idx_solicitacao_nome_solicitante"
+                tableName="solicitacao_credito"/>
+
+        <dropIndex 
+                indexName="idx_solicitacao_numero_nfse"
+                tableName="solicitacao_credito"/>
+
+        <!-- Remover a tabela solicitacao_credito -->
+        <dropTable tableName="solicitacao_credito"/>
+
+        <rollback>
+            <!-- ATENÇÃO: Esta migration é IRREVERSÍVEL por definição -->
+            <!-- A tabela solicitacao_credito foi removida após migração completa de dados -->
+            <!-- Rollback manual seria necessário para recriar a tabela e seus dados -->
+            <!-- Não é recomendado fazer rollback desta migration -->
+            <sql>
+                -- Rollback não suportado: tabela solicitacao_credito foi removida permanentemente
+                -- Para recriar, seria necessário:
+                -- 1. Recriar a tabela com todas as colunas
+                -- 2. Recriar os índices
+                -- 3. Restaurar dados de backup (se disponível)
+                SELECT 'Rollback não suportado para migration 010' AS mensagem;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
+
