@@ -1,6 +1,6 @@
 package br.com.searchcredit.application.dto.solicitacao;
 
-import br.com.searchcredit.domain.enums.StatusSolicitacao;
+import br.com.searchcredit.domain.enums.StatusCredito;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class SolicitacaoCreditoResponseDto {
     private BigDecimal valorFaturado;
     private BigDecimal valorDeducao;
     private BigDecimal baseCalculo;
-    private StatusSolicitacao status;
+    private StatusCredito status;
     private String nomeSolicitante;
     private String comprovanteUrl;
     private LocalDateTime dataSolicitacao;
