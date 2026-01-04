@@ -118,20 +118,7 @@ public class CreditoController {
     public ResponseEntity<Void> analisar(
             @PathVariable Long id,
             @RequestBody @Valid CreditoAnaliseRequestDto requestDto) {
-        
-        // Validar que o status é APROVADO ou REPROVADO
-        if (requestDto.getStatus() != StatusCredito.APROVADO && 
-            requestDto.getStatus() != StatusCredito.REPROVADO) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        try {
-            creditoService.analisar(id, requestDto);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        creditoService.analisar(id, requestDto);
+        return ResponseEntity.noContent().build();
     }
 }
