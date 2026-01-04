@@ -1,6 +1,8 @@
 package br.com.searchcredit.infrastructure.kafka;
 
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
+import br.com.searchcredit.infrastructure.kafka.event.CreditoAnalisadoEvent;
+import br.com.searchcredit.infrastructure.kafka.event.SolicitacaoCreditoAnalisadaEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +23,7 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ConsultaCreditoEvent> producerFactory() {
+    public ProducerFactory<String, ConsultaCreditoEvent> consultaProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -31,8 +33,38 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, ConsultaCreditoEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, ConsultaCreditoEvent> consultaKafkaTemplate() {
+        return new KafkaTemplate<>(consultaProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, SolicitacaoCreditoAnalisadaEvent> analiseProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, SolicitacaoCreditoAnalisadaEvent> analiseKafkaTemplate() {
+        return new KafkaTemplate<>(analiseProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, CreditoAnalisadoEvent> creditoAnalisadoProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CreditoAnalisadoEvent> creditoAnalisadoKafkaTemplate() {
+        return new KafkaTemplate<>(creditoAnalisadoProducerFactory());
     }
 }
 

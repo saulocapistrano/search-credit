@@ -1,16 +1,29 @@
 package br.com.searchcredit.application.service;
 
-import br.com.searchcredit.application.dto.CreditoResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoAdminResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoAnaliseRequestDto;
+import br.com.searchcredit.application.dto.credito.CreditoCreateRequestDto;
+import br.com.searchcredit.application.dto.credito.CreditoQueryResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
+import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CreditoService {
 
@@ -22,26 +35,85 @@ public class CreditoService {
         this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
-    public Optional<CreditoResponseDto> findByNumeroCredito(String numeroCredito){
-        Optional<CreditoResponseDto> result = repository.findByNumeroCredito(numeroCredito)
-                .map(this::toDto);
-        kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroCredito", numeroCredito));
+    public Optional<CreditoQueryResponseDto> findByNumeroCredito(String numeroCredito){
+        Optional<CreditoQueryResponseDto> result = repository.findByNumeroCredito(numeroCredito)
+                .map(this::toQueryDto);
+        try {
+            kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroCredito", numeroCredito));
+        } catch (Exception e) {
+            log.warn("Falha ao publicar evento Kafka para consulta por número de crédito: {}", numeroCredito, e);
+        }
         return result;
     }
 
-    public List<CreditoResponseDto> findAllByNumeroFnse(String numeroFnse){
-        List<CreditoResponseDto> result = repository.findAllByNumeroNfse(numeroFnse)
+    public Page<CreditoResponseDto> listAll(int page, int size, String sortBy, String sortDir) {
+        Sort sort = "desc".equalsIgnoreCase(sortDir)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return repository.findAll(pageable)
+                .map(this::toListDto);
+    }
+
+    public List<CreditoQueryResponseDto> findAllByNumeroNfse(String numeroNfse){
+        List<CreditoQueryResponseDto> result = repository.findAllByNumeroNfse(numeroNfse)
                 .stream()
-                .map(this::toDto)
+                .map(this::toQueryDto)
                 .collect(Collectors.toList());
-        kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroNfse", numeroFnse));
+        try {
+            kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroNfse", numeroNfse));
+        } catch (Exception e) {
+            log.warn("Falha ao publicar evento Kafka para consulta por número NFS-e: {}", numeroNfse, e);
+        }
         return result;
     }
 
+    public CreditoAdminResponseDto create(CreditoCreateRequestDto requestDto) {
+        Credito credito = new Credito();
 
+        credito.setNumeroCredito(requestDto.getNumeroCredito());
+        credito.setNumeroNfse(requestDto.getNumeroNfse());
+        credito.setDataConstituicao(requestDto.getDataConstituicao());
+        credito.setValorIssqn(requestDto.getValorIssqn());
+        credito.setTipoCredito(requestDto.getTipoCredito());
+        credito.setSimplesNacional(requestDto.getSimplesNacional());
+        credito.setAliquota(requestDto.getAliquota());
+        credito.setValorFaturado(requestDto.getValorFaturado());
+        credito.setValorDeducao(requestDto.getValorDeducao());
+        credito.setBaseCalculo(requestDto.getBaseCalculo());
 
-    private CreditoResponseDto toDto(Credito credito){
-        return  CreditoResponseDto.builder()
+        credito.setStatus(StatusCredito.EM_ANALISE);
+        credito.setDataSolicitacao(LocalDateTime.now());
+        credito.setSolicitadoPor(requestDto.getSolicitadoPor());
+
+        Credito saved = repository.save(credito);
+        return toAdminDto(saved);
+    }
+
+    public void analisar(Long id, CreditoAnaliseRequestDto requestDto) {
+        if (requestDto == null || requestDto.getStatus() == null) {
+            throw new IllegalArgumentException("Status é obrigatório");
+        }
+
+        if (requestDto.getStatus() != StatusCredito.APROVADO && requestDto.getStatus() != StatusCredito.REPROVADO) {
+            throw new IllegalArgumentException("Status inválido para análise");
+        }
+
+        Credito credito = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Crédito não encontrado"));
+
+        credito.setStatus(requestDto.getStatus());
+        credito.setAprovadoPor(requestDto.getAprovadoPor());
+        credito.setComentarioAnalise(requestDto.getComentarioAnalise());
+        credito.setDataAnalise(LocalDateTime.now());
+
+        repository.save(credito);
+    }
+
+    private CreditoQueryResponseDto toQueryDto(Credito credito){
+        String situacao = credito.getStatus() != null ? credito.getStatus().name() : null;
+        return CreditoQueryResponseDto.builder()
                 .numeroCredito(credito.getNumeroCredito())
                 .numeroNfse(credito.getNumeroNfse())
                 .dataConstituicao(credito.getDataConstituicao())
@@ -52,6 +124,45 @@ public class CreditoService {
                 .valorFaturado(credito.getValorFaturado())
                 .valorDeducao(credito.getValorDeducao())
                 .baseCalculo(credito.getBaseCalculo())
+                .situacao(situacao)
+                .status(situacao)
+                .build();
+    }
+
+    private CreditoResponseDto toListDto(Credito credito) {
+        return CreditoResponseDto.builder()
+                .id(credito.getId())
+                .numeroCredito(credito.getNumeroCredito())
+                .numeroNfse(credito.getNumeroNfse())
+                .dataConstituicao(credito.getDataConstituicao())
+                .valorIssqn(credito.getValorIssqn())
+                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
+                .valorFaturado(credito.getValorFaturado())
+                .status(credito.getStatus())
+                .dataSolicitacao(credito.getDataSolicitacao())
+                .dataAnalise(credito.getDataAnalise())
+                .build();
+    }
+
+    private CreditoAdminResponseDto toAdminDto(Credito credito){
+        return CreditoAdminResponseDto.builder()
+                .id(credito.getId())
+                .numeroCredito(credito.getNumeroCredito())
+                .numeroNfse(credito.getNumeroNfse())
+                .dataConstituicao(credito.getDataConstituicao())
+                .valorIssqn(credito.getValorIssqn())
+                .tipoCredito(credito.getTipoCredito())
+                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
+                .aliquota(credito.getAliquota())
+                .valorFaturado(credito.getValorFaturado())
+                .valorDeducao(credito.getValorDeducao())
+                .baseCalculo(credito.getBaseCalculo())
+                .status(credito.getStatus())
+                .dataSolicitacao(credito.getDataSolicitacao())
+                .comentarioAnalise(credito.getComentarioAnalise())
+                .dataAnalise(credito.getDataAnalise())
+                .solicitadoPor(credito.getSolicitadoPor())
+                .aprovadoPor(credito.getAprovadoPor())
                 .build();
     }
 

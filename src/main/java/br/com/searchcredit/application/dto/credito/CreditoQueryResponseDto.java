@@ -1,4 +1,4 @@
-package br.com.searchcredit.application.dto;
+package br.com.searchcredit.application.dto.credito;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-public class CreditoResponseDto {
+public class CreditoQueryResponseDto {
 
     private String numeroCredito;
     private String numeroNfse;
@@ -20,4 +20,8 @@ public class CreditoResponseDto {
     private BigDecimal valorFaturado;
     private BigDecimal valorDeducao;
     private BigDecimal baseCalculo;
+
+    private String situacao;
+
+    private String status;
 }
