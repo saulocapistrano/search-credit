@@ -17,7 +17,6 @@ public class CreditoAnalisadoEvent {
     private String numeroCredito;
     private String numeroNfse;
     private StatusCredito status;
-    private String nomeSolicitante;
     private LocalDateTime dataAnalise;
     private String comentarioAnalise;
 }
