@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="004-create-credito-analise-automatica" author="search-credit">
+        <createTable tableName="credito_analise_automatica">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="numero_credito" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="data_processamento" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="credito_analise_automatica"
+                columnNames="numero_credito"
+                constraintName="uk_credito_analise_automatica_numero_credito"/>
+
+        <createIndex indexName="idx_credito_analise_automatica_numero_credito" tableName="credito_analise_automatica">
+            <column name="numero_credito"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
