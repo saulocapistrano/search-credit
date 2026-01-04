@@ -5,14 +5,18 @@ import br.com.searchcredit.application.dto.credito.CreditoCreateRequestDto;
 import br.com.searchcredit.application.dto.credito.CreditoAdminResponseDto;
 import br.com.searchcredit.application.dto.credito.CreditoQueryResponseDto;
 import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
+import br.com.searchcredit.application.dto.common.NextValueResponseDto;
 import br.com.searchcredit.application.service.CreditoService;
+import br.com.searchcredit.application.service.CreditoNumeroGeneratorService;
 import br.com.searchcredit.domain.enums.StatusCredito;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,6 +34,7 @@ import java.util.List;
 public class CreditoController {
 
     private final CreditoService creditoService;
+    private final CreditoNumeroGeneratorService creditoNumeroGeneratorService;
 
     @GetMapping
     public ResponseEntity<Page<CreditoResponseDto>> listAll(
@@ -38,6 +43,16 @@ public class CreditoController {
             @RequestParam(defaultValue = "dataConstituicao") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
         return ResponseEntity.ok(creditoService.listAll(page, size, sortBy, sortDir));
+    }
+
+    @GetMapping("/next-numero-credito")
+    public ResponseEntity<NextValueResponseDto> nextNumeroCredito() {
+        return ResponseEntity.ok(new NextValueResponseDto(creditoNumeroGeneratorService.nextNumeroCredito()));
+    }
+
+    @GetMapping("/next-numero-nfse")
+    public ResponseEntity<NextValueResponseDto> nextNumeroNfse() {
+        return ResponseEntity.ok(new NextValueResponseDto(creditoNumeroGeneratorService.nextNumeroNfse()));
     }
 
     /**
@@ -72,9 +87,11 @@ public class CreditoController {
      * @param comprovante Arquivo de comprovante (opcional)
      * @return Crédito criado
      */
-    @PostMapping
-    public ResponseEntity<CreditoAdminResponseDto> create(@RequestBody @Valid CreditoCreateRequestDto requestDto) {
-        CreditoAdminResponseDto created = creditoService.create(requestDto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CreditoAdminResponseDto> create(
+            @RequestPart("credito") @Valid CreditoCreateRequestDto requestDto,
+            @RequestPart(value = "comprovante", required = false) MultipartFile comprovante) {
+        CreditoAdminResponseDto created = creditoService.create(requestDto, comprovante);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
