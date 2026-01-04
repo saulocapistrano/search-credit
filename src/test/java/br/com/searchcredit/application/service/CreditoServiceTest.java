@@ -1,6 +1,6 @@
 package br.com.searchcredit.application.service;
 
-import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoQueryResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
@@ -70,14 +70,14 @@ class CreditoServiceTest {
         when(repository.findAllByNumeroNfse(numeroNfse)).thenReturn(creditos);
 
         // Act
-        List<CreditoResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
+        List<CreditoQueryResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNumeroCredito()).isEqualTo(numeroCredito);
         assertThat(result.get(0).getNumeroNfse()).isEqualTo(numeroNfse);
-        assertThat(result.get(0).getSimplesNacional()).isEqualTo(true);
+        assertThat(result.get(0).getSimplesNacional()).isEqualTo("Sim");
         assertThat(result.get(0).getValorIssqn()).isEqualByComparingTo(new BigDecimal("1500.00"));
 
         verify(repository, times(1)).findAllByNumeroNfse(numeroNfse);
@@ -91,7 +91,7 @@ class CreditoServiceTest {
         when(repository.findAllByNumeroNfse(numeroNfse)).thenReturn(Collections.emptyList());
 
         // Act
-        List<CreditoResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
+        List<CreditoQueryResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
 
         // Assert
         assertThat(result).isNotNull();
@@ -108,13 +108,13 @@ class CreditoServiceTest {
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(Optional.of(credito));
 
         // Act
-        Optional<CreditoResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
+        Optional<CreditoQueryResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
 
         // Assert
         assertThat(result).isPresent();
         assertThat(result.get().getNumeroCredito()).isEqualTo(numeroCredito);
         assertThat(result.get().getNumeroNfse()).isEqualTo(numeroNfse);
-        assertThat(result.get().getSimplesNacional()).isEqualTo(true);
+        assertThat(result.get().getSimplesNacional()).isEqualTo("Sim");
 
         verify(repository, times(1)).findByNumeroCredito(numeroCredito);
         verify(kafkaEventPublisher, times(1)).publishConsultaCredito(any(ConsultaCreditoEvent.class));
@@ -127,7 +127,7 @@ class CreditoServiceTest {
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(Optional.empty());
 
         // Act
-        Optional<CreditoResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
+        Optional<CreditoQueryResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
 
         // Assert
         assertThat(result).isEmpty();
@@ -180,11 +180,11 @@ class CreditoServiceTest {
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(Optional.of(credito));
 
         // Act
-        Optional<CreditoResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
+        Optional<CreditoQueryResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
 
         // Assert
         assertThat(result).isPresent();
-        assertThat(result.get().getSimplesNacional()).isEqualTo(true);
+        assertThat(result.get().getSimplesNacional()).isEqualTo("Sim");
     }
 
     @Test
@@ -195,11 +195,11 @@ class CreditoServiceTest {
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(Optional.of(credito));
 
         // Act
-        Optional<CreditoResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
+        Optional<CreditoQueryResponseDto> result = creditoService.findByNumeroCredito(numeroCredito);
 
         // Assert
         assertThat(result).isPresent();
-        assertThat(result.get().getSimplesNacional()).isEqualTo(false);
+        assertThat(result.get().getSimplesNacional()).isEqualTo("Não");
     }
 
     @Test
@@ -256,7 +256,7 @@ class CreditoServiceTest {
         when(repository.findAllByNumeroNfse(numeroNfse)).thenReturn(creditos);
 
         // Act
-        List<CreditoResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
+        List<CreditoQueryResponseDto> result = creditoService.findAllByNumeroNfse(numeroNfse);
 
         // Assert
         assertThat(result).isNotNull();
