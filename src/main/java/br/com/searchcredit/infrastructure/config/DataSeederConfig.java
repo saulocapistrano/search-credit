@@ -75,7 +75,6 @@ public class DataSeederConfig implements CommandLineRunner {
                     .valorDeducao(BigDecimal.valueOf((Double) dadosItem[8]))
                     .baseCalculo(BigDecimal.valueOf((Double) dadosItem[9]))
                     .status(StatusCredito.EM_ANALISE)
-                    .nomeSolicitante("Usuário Teste")
                     .comprovanteUrl(null)
                     .dataSolicitacao(LocalDateTime.now().minusDays((Integer) dadosItem[2]))
                     .comentarioAnalise(null)
