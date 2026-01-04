@@ -63,7 +63,6 @@ public class SolicitacaoCreditoApplicationService {
         SolicitacaoCreditoAnalisadaEvent eventLegado = new SolicitacaoCreditoAnalisadaEvent(
                 creditoAtualizado.getId(),
                 creditoAtualizado.getNumeroCredito(),
-                creditoAtualizado.getNomeSolicitante(),
                 statusLegado, // Conversão apenas para compatibilidade com evento Kafka legado
                 creditoAtualizado.getDataAnalise(),
                 creditoAtualizado.getComentarioAnalise()
