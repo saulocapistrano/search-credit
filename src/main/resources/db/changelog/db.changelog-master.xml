@@ -5,15 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/001-create-table-credito.xml"/>
-    <include file="db/changelog/002-insert-creditos.xml"/>
-    <include file="db/changelog/003-create-table-solicitacao-credito.xml"/>
-    <include file="db/changelog/004-add-analise-fields-solicitacao-credito.xml"/>
-    <include file="db/changelog/005-add-constraints-indexes.xml"/>
-    <include file="db/changelog/006-relax-notnull-solicitacao-credit.xml"/>
-    <include file="db/changelog/007-insert-more-creditos.xml"/>
-    <include file="db/changelog/008-add-workflow-fields-to-credito.xml"/>
-    <include file="db/changelog/009-migrate-solicitacao-to-credito.xml"/>
-    <include file="db/changelog/010-drop-table-solicitacao-credito.xml"/>
+    <include file="db/changelog/001-credito-base.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
