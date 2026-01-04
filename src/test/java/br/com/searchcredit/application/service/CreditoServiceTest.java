@@ -5,6 +5,7 @@ import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
+import br.com.searchcredit.infrastructure.storage.MinioStorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,12 @@ class CreditoServiceTest {
 
     @Mock
     private KafkaEventPublisher kafkaEventPublisher;
+
+    @Mock
+    private MinioStorageService minioStorageService;
+
+    @Mock
+    private CreditoNumeroGeneratorService creditoNumeroGeneratorService;
 
     @InjectMocks
     private CreditoService creditoService;
