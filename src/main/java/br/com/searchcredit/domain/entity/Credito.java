@@ -55,7 +55,7 @@ public class Credito {
     @Column(name = "status", nullable = true, length = 20)
     private StatusCredito status;
 
-    @Transient
+    @Column(name = "comprovante_url", nullable = true, length = 512)
     private String comprovanteUrl;
 
     @Column(name = "data_solicitacao", nullable = true)

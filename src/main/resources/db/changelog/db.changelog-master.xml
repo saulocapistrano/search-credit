@@ -7,4 +7,10 @@
 
     <include file="db/changelog/001-credito-base.xml" relativeToChangelogFile="false"/>
 
+    <include file="db/changelog/002-add-comprovante-url.xml" relativeToChangelogFile="false"/>
+
+    <include file="db/changelog/003-create-numero-sequences.xml" relativeToChangelogFile="false"/>
+
+    <include file="db/changelog/004-create-credito-analise-automatica.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>

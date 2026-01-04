@@ -6,6 +6,14 @@ spring:
   web:
     resources:
       add-mappings: false
+  servlet:
+    multipart:
+      max-file-size: 1500MB
+      max-request-size: 1500MB
+
+server:
+  tomcat:
+    max-swallow-size: 1500MB
 
 ---
 spring:

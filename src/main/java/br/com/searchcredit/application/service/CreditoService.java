@@ -8,20 +8,26 @@ import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
+import br.com.searchcredit.application.exception.CreditoAnaliseBadRequestException;
+import br.com.searchcredit.application.exception.CreditoNotFoundException;
 import br.com.searchcredit.infrastructure.kafka.KafkaEventPublisher;
 import br.com.searchcredit.infrastructure.kafka.event.ConsultaCreditoEvent;
+import br.com.searchcredit.infrastructure.kafka.event.SolicitacaoCreditoEvent;
+import br.com.searchcredit.infrastructure.storage.MinioStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -29,10 +35,18 @@ public class CreditoService {
 
     private final CreditoRepository repository;
     private final KafkaEventPublisher kafkaEventPublisher;
+    private final MinioStorageService minioStorageService;
+    private final CreditoNumeroGeneratorService creditoNumeroGeneratorService;
 
-    public CreditoService(CreditoRepository repository, KafkaEventPublisher kafkaEventPublisher) {
+    public CreditoService(
+            CreditoRepository repository,
+            KafkaEventPublisher kafkaEventPublisher,
+            MinioStorageService minioStorageService,
+            CreditoNumeroGeneratorService creditoNumeroGeneratorService) {
         this.repository = repository;
         this.kafkaEventPublisher = kafkaEventPublisher;
+        this.minioStorageService = minioStorageService;
+        this.creditoNumeroGeneratorService = creditoNumeroGeneratorService;
     }
 
     public Optional<CreditoQueryResponseDto> findByNumeroCredito(String numeroCredito){
@@ -70,10 +84,24 @@ public class CreditoService {
     }
 
     public CreditoAdminResponseDto create(CreditoCreateRequestDto requestDto) {
+        return create(requestDto, null);
+    }
+
+    public CreditoAdminResponseDto create(CreditoCreateRequestDto requestDto, MultipartFile comprovante) {
         Credito credito = new Credito();
 
-        credito.setNumeroCredito(requestDto.getNumeroCredito());
-        credito.setNumeroNfse(requestDto.getNumeroNfse());
+        String numeroCredito = requestDto.getNumeroCredito();
+        if (numeroCredito == null || numeroCredito.isBlank()) {
+            numeroCredito = creditoNumeroGeneratorService.nextNumeroCredito();
+        }
+
+        String numeroNfse = requestDto.getNumeroNfse();
+        if (numeroNfse == null || numeroNfse.isBlank()) {
+            numeroNfse = creditoNumeroGeneratorService.nextNumeroNfse();
+        }
+
+        credito.setNumeroCredito(numeroCredito);
+        credito.setNumeroNfse(numeroNfse);
         credito.setDataConstituicao(requestDto.getDataConstituicao());
         credito.setValorIssqn(requestDto.getValorIssqn());
         credito.setTipoCredito(requestDto.getTipoCredito());
@@ -87,21 +115,51 @@ public class CreditoService {
         credito.setDataSolicitacao(LocalDateTime.now());
         credito.setSolicitadoPor(requestDto.getSolicitadoPor());
 
+        if (comprovante != null && !comprovante.isEmpty()) {
+            String comprovanteUrl = minioStorageService.uploadComprovante(comprovante);
+            credito.setComprovanteUrl(comprovanteUrl);
+        }
+
         Credito saved = repository.save(credito);
+
+        try {
+            kafkaEventPublisher.publishSolicitacaoCredito(
+                    new SolicitacaoCreditoEvent(
+                            saved.getNumeroCredito(),
+                            saved.getNumeroNfse(),
+                            saved.getSolicitadoPor()
+                    )
+            );
+        } catch (Exception e) {
+            log.warn("Falha ao publicar evento Kafka de solicitação de crédito", e);
+        }
         return toAdminDto(saved);
     }
 
     public void analisar(Long id, CreditoAnaliseRequestDto requestDto) {
+        analisarTransacional(id, requestDto);
+    }
+
+    @Transactional
+    protected void analisarTransacional(Long id, CreditoAnaliseRequestDto requestDto) {
         if (requestDto == null || requestDto.getStatus() == null) {
-            throw new IllegalArgumentException("Status é obrigatório");
+            throw new CreditoAnaliseBadRequestException("Status é obrigatório");
         }
 
         if (requestDto.getStatus() != StatusCredito.APROVADO && requestDto.getStatus() != StatusCredito.REPROVADO) {
-            throw new IllegalArgumentException("Status inválido para análise");
+            throw new CreditoAnaliseBadRequestException("Status inválido para análise");
+        }
+
+        if (requestDto.getAprovadoPor() == null || requestDto.getAprovadoPor().isBlank()) {
+            throw new CreditoAnaliseBadRequestException("aprovadoPor é obrigatório");
         }
 
         Credito credito = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Crédito não encontrado"));
+                .orElseThrow(() -> new CreditoNotFoundException("Crédito não encontrado"));
+
+        if (credito.getStatus() != StatusCredito.EM_ANALISE) {
+            throw new CreditoAnaliseBadRequestException("Crédito não está em análise");
+        }
 
         credito.setStatus(requestDto.getStatus());
         credito.setAprovadoPor(requestDto.getAprovadoPor());

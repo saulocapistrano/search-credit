@@ -1,6 +1,8 @@
 package br.com.searchcredit.interfaces.controller.exception;
 
 import br.com.searchcredit.infrastructure.storage.exception.StorageException;
+import br.com.searchcredit.application.exception.CreditoAnaliseBadRequestException;
+import br.com.searchcredit.application.exception.CreditoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,18 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CreditoNotFoundException.class)
+    public ResponseEntity<Void> handleCreditoNotFoundException(CreditoNotFoundException ex) {
+        log.warn("Crédito não encontrado: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @ExceptionHandler(CreditoAnaliseBadRequestException.class)
+    public ResponseEntity<Void> handleCreditoAnaliseBadRequestException(CreditoAnaliseBadRequestException ex) {
+        log.warn("Requisição inválida para análise de crédito: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
 
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<Map<String, Object>> handleStorageException(StorageException ex) {
