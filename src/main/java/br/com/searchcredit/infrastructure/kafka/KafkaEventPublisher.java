@@ -53,7 +53,6 @@ public class KafkaEventPublisher {
                 credito.getNumeroCredito(),
                 credito.getNumeroNfse(),
                 credito.getStatus(),
-                credito.getNomeSolicitante(),
                 credito.getDataAnalise(),
                 credito.getComentarioAnalise()
         );
