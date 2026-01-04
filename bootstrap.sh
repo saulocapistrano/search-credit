@@ -20,7 +20,7 @@ fi
 
 echo ""
 echo "Subindo containers da API..."
-docker compose up -d
+docker compose up -d --build
 
 echo ""
 echo "=== Bootstrap concluído ==="
