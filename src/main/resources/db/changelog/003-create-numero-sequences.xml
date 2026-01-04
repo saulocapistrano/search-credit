@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="003-create-numero-sequences" author="search-credit" dbms="postgresql">
+        <sql splitStatements="true" stripComments="true">
+            CREATE SEQUENCE IF NOT EXISTS credito_numero_credito_seq;
+            SELECT setval(
+                'credito_numero_credito_seq',
+                COALESCE(
+                    (
+                        SELECT MAX(numero_credito::bigint)
+                        FROM credito
+                        WHERE numero_credito ~ '^[0-9]+$'
+                    ),
+                    0
+                ) + 1,
+                false
+            );
+
+            CREATE SEQUENCE IF NOT EXISTS credito_numero_nfse_seq;
+            SELECT setval(
+                'credito_numero_nfse_seq',
+                COALESCE(
+                    (
+                        SELECT MAX(numero_nfse::bigint)
+                        FROM credito
+                        WHERE numero_nfse ~ '^[0-9]+$'
+                    ),
+                    0
+                ) + 1,
+                false
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
