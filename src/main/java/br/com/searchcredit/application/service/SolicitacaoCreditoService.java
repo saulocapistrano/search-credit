@@ -1,14 +1,12 @@
 package br.com.searchcredit.application.service;
 
-import br.com.searchcredit.application.dto.solicitacao.AtualizarStatusRequestDto;
-import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoRequestDto;
-import br.com.searchcredit.application.dto.solicitacao.SolicitacaoCreditoResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoAdminResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoCreateRequestDto;
+import br.com.searchcredit.application.dto.credito.CreditoAnaliseRequestDto;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.enums.StatusCredito;
 import br.com.searchcredit.domain.repository.CreditoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +24,8 @@ public class SolicitacaoCreditoService {
     private final CreditoRepository creditoRepository;
 
     @Transactional
-    public SolicitacaoCreditoResponseDto criarSolicitacao(
-            SolicitacaoCreditoRequestDto requestDto,
+    public CreditoAdminResponseDto criarSolicitacao(
+            CreditoCreateRequestDto requestDto,
             MultipartFile comprovante) {
 
         // Delegar criação para CreditoWorkflowService (cria diretamente em Credito)
@@ -42,23 +40,22 @@ public class SolicitacaoCreditoService {
                 requestDto.getValorFaturado(),
                 requestDto.getValorDeducao(),
                 requestDto.getBaseCalculo(),
-                requestDto.getNomeSolicitante(),
                 comprovante
         );
 
-        // Converter Credito para SolicitacaoCreditoResponseDto
+        // Converter Credito para resposta
         return toResponseDto(creditoCriado);
     }
 
     /**
-     * Converte Credito para SolicitacaoCreditoResponseDto.
+     * Converte Credito para CreditoAdminResponseDto.
      */
-    private SolicitacaoCreditoResponseDto toResponseDto(Credito credito) {
+    private CreditoAdminResponseDto toResponseDto(Credito credito) {
         if (credito == null) {
             return null;
         }
 
-        return SolicitacaoCreditoResponseDto.builder()
+        return CreditoAdminResponseDto.builder()
                 .id(credito.getId())
                 .numeroCredito(credito.getNumeroCredito())
                 .numeroNfse(credito.getNumeroNfse())
@@ -71,39 +68,27 @@ public class SolicitacaoCreditoService {
                 .valorDeducao(credito.getValorDeducao())
                 .baseCalculo(credito.getBaseCalculo())
                 .status(credito.getStatus())
-                .nomeSolicitante(credito.getNomeSolicitante())
-                .comprovanteUrl(credito.getComprovanteUrl())
                 .dataSolicitacao(credito.getDataSolicitacao())
                 .comentarioAnalise(credito.getComentarioAnalise())
                 .dataAnalise(credito.getDataAnalise())
+                .solicitadoPor(credito.getSolicitadoPor())
+                .aprovadoPor(credito.getAprovadoPor())
                 .build();
     }
 
-    public List<SolicitacaoCreditoResponseDto> listarTodas() {
+    public List<CreditoAdminResponseDto> listarTodas() {
         return creditoRepository.findAll().stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public List<SolicitacaoCreditoResponseDto> buscarTodas() {
+    public List<CreditoAdminResponseDto> buscarTodas() {
         return creditoRepository.findAll().stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public List<SolicitacaoCreditoResponseDto> listarPorSolicitante(String nomeSolicitante) {
-        return creditoRepository.findByNomeSolicitante(nomeSolicitante).stream()
-                .map(this::toResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    public Page<SolicitacaoCreditoResponseDto> listarPorSolicitante(String nomeSolicitante, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Credito> creditos = creditoRepository.findByNomeSolicitante(nomeSolicitante, pageable);
-        return creditos.map(this::toResponseDto);
-    }
-
-    public Page<SolicitacaoCreditoResponseDto> listarTodas(int page, int size, String sortBy, String sortDir) {
+    public Page<CreditoAdminResponseDto> listarTodas(int page, int size, String sortBy, String sortDir) {
         Page<Credito> creditos = creditoRepository.findAll(page, size, sortBy, sortDir);
         return creditos.map(this::toResponseDto);
     }
@@ -146,25 +131,25 @@ public class SolicitacaoCreditoService {
         return "NFSE1000001";
     }
 
-    public List<SolicitacaoCreditoResponseDto> listarPorNumeroCredito(String numeroCredito) {
+    public List<CreditoAdminResponseDto> listarPorNumeroCredito(String numeroCredito) {
         return creditoRepository.findByNumeroCreditoList(numeroCredito).stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public List<SolicitacaoCreditoResponseDto> listarPorNumeroNfse(String numeroNfse) {
+    public List<CreditoAdminResponseDto> listarPorNumeroNfse(String numeroNfse) {
         return creditoRepository.findByNumeroNfseList(numeroNfse).stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    public Optional<SolicitacaoCreditoResponseDto> buscarPorId(Long id) {
+    public Optional<CreditoAdminResponseDto> buscarPorId(Long id) {
         return creditoRepository.findById(id)
                 .map(this::toResponseDto);
     }
 
     @Transactional
-    public Optional<SolicitacaoCreditoResponseDto> atualizarStatus(Long id, AtualizarStatusRequestDto requestDto) {
+    public Optional<CreditoAdminResponseDto> atualizarStatus(Long id, CreditoAnaliseRequestDto requestDto) {
         return creditoRepository.findById(id)
                 .map(credito -> {
                     // Bloquear mudança direta para APROVADO ou REPROVADO
