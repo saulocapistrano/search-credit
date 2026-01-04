@@ -42,11 +42,6 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     }
 
     @Override
-    public Page<Credito> findByNomeSolicitante(String nomeSolicitante, Pageable pageable) {
-        return jpaRepository.findByNomeSolicitante(nomeSolicitante, pageable);
-    }
-
-    @Override
     public List<Credito> findByStatus(StatusCredito status) {
         return jpaRepository.findByStatus(status);
     }
@@ -69,11 +64,6 @@ public class CreditoRepositoryImpl implements CreditoRepository {
     @Override
     public List<Credito> findByNumeroNfseList(String numeroNfse) {
         return jpaRepository.findByNumeroNfseList(numeroNfse);
-    }
-
-    @Override
-    public List<Credito> findByNomeSolicitante(String nomeSolicitante) {
-        return jpaRepository.findByNomeSolicitante(nomeSolicitante);
     }
 
     @Override
