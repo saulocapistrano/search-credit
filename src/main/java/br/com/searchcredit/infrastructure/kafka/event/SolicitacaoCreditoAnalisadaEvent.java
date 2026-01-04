@@ -20,7 +20,6 @@ public class SolicitacaoCreditoAnalisadaEvent {
 
     private Long solicitacaoId;
     private String numeroCredito;
-    private String nomeSolicitante;
     private StatusSolicitacao statusFinal;
     private LocalDateTime dataAnalise;
     private String comentario;
