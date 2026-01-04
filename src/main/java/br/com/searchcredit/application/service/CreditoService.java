@@ -1,5 +1,9 @@
 package br.com.searchcredit.application.service;
 
+import br.com.searchcredit.application.dto.credito.CreditoAdminResponseDto;
+import br.com.searchcredit.application.dto.credito.CreditoAnaliseRequestDto;
+import br.com.searchcredit.application.dto.credito.CreditoCreateRequestDto;
+import br.com.searchcredit.application.dto.credito.CreditoQueryResponseDto;
 import br.com.searchcredit.application.dto.credito.CreditoResponseDto;
 import br.com.searchcredit.domain.entity.Credito;
 import br.com.searchcredit.domain.enums.StatusCredito;
@@ -12,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +35,9 @@ public class CreditoService {
         this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
-    public Optional<CreditoResponseDto> findByNumeroCredito(String numeroCredito){
-        Optional<CreditoResponseDto> result = repository.findByNumeroCredito(numeroCredito)
-                .map(this::toDto);
+    public Optional<CreditoQueryResponseDto> findByNumeroCredito(String numeroCredito){
+        Optional<CreditoQueryResponseDto> result = repository.findByNumeroCredito(numeroCredito)
+                .map(this::toQueryDto);
         try {
             kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroCredito", numeroCredito));
         } catch (Exception e) {
@@ -40,10 +46,20 @@ public class CreditoService {
         return result;
     }
 
-    public List<CreditoResponseDto> findAllByNumeroNfse(String numeroNfse){
-        List<CreditoResponseDto> result = repository.findAllByNumeroNfse(numeroNfse)
+    public Page<CreditoResponseDto> listAll(int page, int size, String sortBy, String sortDir) {
+        Sort sort = "desc".equalsIgnoreCase(sortDir)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return repository.findAll(pageable)
+                .map(this::toListDto);
+    }
+
+    public List<CreditoQueryResponseDto> findAllByNumeroNfse(String numeroNfse){
+        List<CreditoQueryResponseDto> result = repository.findAllByNumeroNfse(numeroNfse)
                 .stream()
-                .map(this::toDto)
+                .map(this::toQueryDto)
                 .collect(Collectors.toList());
         try {
             kafkaEventPublisher.publishConsultaCredito(new ConsultaCreditoEvent("numeroNfse", numeroNfse));
@@ -53,50 +69,100 @@ public class CreditoService {
         return result;
     }
 
-    public Page<CreditoResponseDto> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "dataConstituicao")
-        );
+    public CreditoAdminResponseDto create(CreditoCreateRequestDto requestDto) {
+        Credito credito = new Credito();
 
-        return repository.findAll(pageable)
-                .map(this::toDto);
+        credito.setNumeroCredito(requestDto.getNumeroCredito());
+        credito.setNumeroNfse(requestDto.getNumeroNfse());
+        credito.setDataConstituicao(requestDto.getDataConstituicao());
+        credito.setValorIssqn(requestDto.getValorIssqn());
+        credito.setTipoCredito(requestDto.getTipoCredito());
+        credito.setSimplesNacional(requestDto.getSimplesNacional());
+        credito.setAliquota(requestDto.getAliquota());
+        credito.setValorFaturado(requestDto.getValorFaturado());
+        credito.setValorDeducao(requestDto.getValorDeducao());
+        credito.setBaseCalculo(requestDto.getBaseCalculo());
+
+        credito.setStatus(StatusCredito.EM_ANALISE);
+        credito.setDataSolicitacao(LocalDateTime.now());
+        credito.setSolicitadoPor(requestDto.getSolicitadoPor());
+
+        Credito saved = repository.save(credito);
+        return toAdminDto(saved);
     }
 
-    public Optional<CreditoResponseDto> findById(Long id) {
-        return repository.findById(id)
-                .map(this::toDto);
+    public void analisar(Long id, CreditoAnaliseRequestDto requestDto) {
+        if (requestDto == null || requestDto.getStatus() == null) {
+            throw new IllegalArgumentException("Status é obrigatório");
+        }
+
+        if (requestDto.getStatus() != StatusCredito.APROVADO && requestDto.getStatus() != StatusCredito.REPROVADO) {
+            throw new IllegalArgumentException("Status inválido para análise");
+        }
+
+        Credito credito = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Crédito não encontrado"));
+
+        credito.setStatus(requestDto.getStatus());
+        credito.setAprovadoPor(requestDto.getAprovadoPor());
+        credito.setComentarioAnalise(requestDto.getComentarioAnalise());
+        credito.setDataAnalise(LocalDateTime.now());
+
+        repository.save(credito);
     }
 
-    public Optional<CreditoResponseDto> updateStatus(Long id, StatusCredito novoStatus) {
-        return repository.findById(id)
-                .map(credito -> {
-                    credito.setStatus(novoStatus);
-                    Credito updated = repository.save(credito);
-                    return toDto(updated);
-                });
+    private CreditoQueryResponseDto toQueryDto(Credito credito){
+        String situacao = credito.getStatus() != null ? credito.getStatus().name() : null;
+        return CreditoQueryResponseDto.builder()
+                .numeroCredito(credito.getNumeroCredito())
+                .numeroNfse(credito.getNumeroNfse())
+                .dataConstituicao(credito.getDataConstituicao())
+                .valorIssqn(credito.getValorIssqn())
+                .tipoCredito(credito.getTipoCredito())
+                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
+                .aliquota(credito.getAliquota())
+                .valorFaturado(credito.getValorFaturado())
+                .valorDeducao(credito.getValorDeducao())
+                .baseCalculo(credito.getBaseCalculo())
+                .situacao(situacao)
+                .status(situacao)
+                .build();
     }
 
-    private CreditoResponseDto toDto(Credito credito){
+    private CreditoResponseDto toListDto(Credito credito) {
         return CreditoResponseDto.builder()
                 .id(credito.getId())
                 .numeroCredito(credito.getNumeroCredito())
                 .numeroNfse(credito.getNumeroNfse())
                 .dataConstituicao(credito.getDataConstituicao())
                 .valorIssqn(credito.getValorIssqn())
+                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
+                .valorFaturado(credito.getValorFaturado())
+                .status(credito.getStatus())
+                .dataSolicitacao(credito.getDataSolicitacao())
+                .dataAnalise(credito.getDataAnalise())
+                .build();
+    }
+
+    private CreditoAdminResponseDto toAdminDto(Credito credito){
+        return CreditoAdminResponseDto.builder()
+                .id(credito.getId())
+                .numeroCredito(credito.getNumeroCredito())
+                .numeroNfse(credito.getNumeroNfse())
+                .dataConstituicao(credito.getDataConstituicao())
+                .valorIssqn(credito.getValorIssqn())
                 .tipoCredito(credito.getTipoCredito())
-                .simplesNacional(credito.isSimplesNacional())
+                .simplesNacional(credito.isSimplesNacional() ? "Sim" : "Não")
                 .aliquota(credito.getAliquota())
                 .valorFaturado(credito.getValorFaturado())
                 .valorDeducao(credito.getValorDeducao())
                 .baseCalculo(credito.getBaseCalculo())
                 .status(credito.getStatus())
-                .nomeSolicitante(credito.getNomeSolicitante())
-                .comprovanteUrl(credito.getComprovanteUrl())
                 .dataSolicitacao(credito.getDataSolicitacao())
                 .comentarioAnalise(credito.getComentarioAnalise())
                 .dataAnalise(credito.getDataAnalise())
+                .solicitadoPor(credito.getSolicitadoPor())
+                .aprovadoPor(credito.getAprovadoPor())
                 .build();
     }
 
