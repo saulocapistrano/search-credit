@@ -37,7 +37,6 @@ public class CreditoWorkflowService {
      * @param valorFaturado Valor faturado
      * @param valorDeducao Valor de dedução
      * @param baseCalculo Base de cálculo
-     * @param nomeSolicitante Nome do solicitante
      * @param comprovante Arquivo de comprovante (opcional)
      * @return Credito criado e persistido
      */
@@ -53,7 +52,6 @@ public class CreditoWorkflowService {
             java.math.BigDecimal valorFaturado,
             java.math.BigDecimal valorDeducao,
             java.math.BigDecimal baseCalculo,
-            String nomeSolicitante,
             MultipartFile comprovante) {
 
         String comprovanteUrl = null;
@@ -73,7 +71,6 @@ public class CreditoWorkflowService {
                 .valorDeducao(valorDeducao)
                 .baseCalculo(baseCalculo)
                 .status(StatusCredito.EM_ANALISE)
-                .nomeSolicitante(nomeSolicitante)
                 .comprovanteUrl(comprovanteUrl)
                 .dataSolicitacao(LocalDateTime.now())
                 .build();
