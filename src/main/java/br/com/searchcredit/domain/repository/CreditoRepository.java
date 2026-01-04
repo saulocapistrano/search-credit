@@ -18,8 +18,6 @@ public interface CreditoRepository {
 
     Page<Credito> findAll(Pageable pageable);
 
-    Page<Credito> findByNomeSolicitante(String nomeSolicitante, Pageable pageable);
-
     List<Credito> findByStatus(StatusCredito status);
 
     Optional<Credito> findById(Long id);
@@ -29,8 +27,6 @@ public interface CreditoRepository {
     List<Credito> findByNumeroCreditoList(String numeroCredito);
 
     List<Credito> findByNumeroNfseList(String numeroNfse);
-
-    List<Credito> findByNomeSolicitante(String nomeSolicitante);
 
     Page<Credito> findAll(int page, int size, String sortBy, String sortDir);
 
